@@ -1,0 +1,661 @@
+-- Table: public.contract
+
+-- DROP TABLE IF EXISTS public.contract;
+
+CREATE TABLE IF NOT EXISTS public.contract
+(
+    id integer NOT NULL DEFAULT nextval('contract_id_seq'::regclass),
+    usertoken character varying COLLATE pg_catalog."default" NOT NULL,
+    status character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT contract_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.contractstatus
+
+-- DROP TABLE IF EXISTS public.contractstatus;
+
+CREATE TABLE IF NOT EXISTS public.contractstatus
+(
+    id integer NOT NULL DEFAULT nextval('contractstatus_id_seq'::regclass),
+    status character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT contractstatus_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+-- Table: public.contracttype
+
+-- DROP TABLE IF EXISTS public.contracttype;
+
+CREATE TABLE IF NOT EXISTS public.contracttype
+(
+    id integer NOT NULL DEFAULT nextval('contracttype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT contracttype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+
+-- Table: public.info
+
+-- DROP TABLE IF EXISTS public.info;
+
+CREATE TABLE IF NOT EXISTS public.info
+(
+    id integer NOT NULL DEFAULT nextval('info_id_seq'::regclass),
+    istemporary boolean NOT NULL,
+    startdate date NOT NULL,
+    enddate date NOT NULL,
+    terminationperiod character varying COLLATE pg_catalog."default" NOT NULL,
+    expdate date NOT NULL,
+    isreferenced boolean NOT NULL,
+    projectid integer,
+    projectname character varying COLLATE pg_catalog."default",
+    comment character varying COLLATE pg_catalog."default" NOT NULL,
+    contractid integer NOT NULL,
+    contractstatusid integer NOT NULL,
+    contracttypeid integer NOT NULL,
+    CONSTRAINT info_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT contractstatusid FOREIGN KEY (contractstatusid)
+        REFERENCES public.contractstatus (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT contracttypeid FOREIGN KEY (contracttypeid)
+        REFERENCES public.contracttype (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+
+
+
+
+-- Index: fki_contractid
+
+-- DROP INDEX IF EXISTS public.fki_contractid;
+
+CREATE INDEX IF NOT EXISTS fki_contractid
+    ON public.info USING btree
+    (contractid ASC NULLS LAST)
+    TABLESPACE pg_default;
+-- Index: fki_contractstatusid
+
+-- DROP INDEX IF EXISTS public.fki_contractstatusid;
+
+CREATE INDEX IF NOT EXISTS fki_contractstatusid
+    ON public.info USING btree
+    (contractstatusid ASC NULLS LAST)
+    TABLESPACE pg_default;
+-- Index: fki_contracttypeid
+
+-- DROP INDEX IF EXISTS public.fki_contracttypeid;
+
+CREATE INDEX IF NOT EXISTS fki_contracttypeid
+    ON public.info USING btree
+    (contracttypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+
+
+-- Table: public.departmenttype
+
+-- DROP TABLE IF EXISTS public.departmenttype;
+
+CREATE TABLE IF NOT EXISTS public.departmenttype
+(
+    id integer NOT NULL DEFAULT nextval('departmenttype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT departmenttype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.department
+
+-- DROP TABLE IF EXISTS public.department;
+
+CREATE TABLE IF NOT EXISTS public.department
+(
+    id integer NOT NULL DEFAULT nextval('department_id_seq'::regclass),
+    contractid integer NOT NULL,
+    departmenttypeid integer NOT NULL,
+    CONSTRAINT department_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT departmenttypeid FOREIGN KEY (departmenttypeid)
+        REFERENCES public.departmenttype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+-- Index: fki_departmenttypeid
+
+-- DROP INDEX IF EXISTS public.fki_departmenttypeid;
+
+CREATE INDEX IF NOT EXISTS fki_departmenttypeid
+    ON public.department USING btree
+    (departmenttypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+
+
+-- Table: public.contractor
+
+-- DROP TABLE IF EXISTS public.contractor;
+
+CREATE TABLE IF NOT EXISTS public.contractor
+(
+    id integer NOT NULL DEFAULT nextval('contractor_id_seq'::regclass),
+    contractid integer NOT NULL,
+    companyname character varying COLLATE pg_catalog."default" NOT NULL,
+    person character varying COLLATE pg_catalog."default" NOT NULL,
+    department character varying COLLATE pg_catalog."default" NOT NULL,
+    email character varying COLLATE pg_catalog."default" NOT NULL,
+    telnumber character varying COLLATE pg_catalog."default" NOT NULL,
+    companyregistrationnumber character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT contractor_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.address
+
+-- DROP TABLE IF EXISTS public.address;
+
+CREATE TABLE IF NOT EXISTS public.address
+(
+    id integer NOT NULL DEFAULT nextval('address_id_seq'::regclass),
+    street character varying COLLATE pg_catalog."default" NOT NULL,
+    postalcode integer NOT NULL,
+    city character varying COLLATE pg_catalog."default" NOT NULL,
+    housenumber character varying COLLATE pg_catalog."default" NOT NULL,
+    contractorid integer NOT NULL,
+    CONSTRAINT address_pkey PRIMARY KEY (id),
+    CONSTRAINT contractorid FOREIGN KEY (contractorid)
+        REFERENCES public.contractor (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+-- Index: fki_contractorid
+
+-- DROP INDEX IF EXISTS public.fki_contractorid;
+
+CREATE INDEX IF NOT EXISTS fki_contractorid
+    ON public.address USING btree
+    (contractorid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+
+-- Table: public.dutytype
+
+-- DROP TABLE IF EXISTS public.dutytype;
+
+CREATE TABLE IF NOT EXISTS public.dutytype
+(
+    id integer NOT NULL DEFAULT nextval('dutytype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT dutytype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.duty
+
+-- DROP TABLE IF EXISTS public.duty;
+
+CREATE TABLE IF NOT EXISTS public.duty
+(
+    id integer NOT NULL DEFAULT nextval('duty_id_seq'::regclass),
+    contractid integer NOT NULL,
+    dutytypeid integer NOT NULL,
+    date date NOT NULL,
+    comment character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT duty_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT dutytypeid FOREIGN KEY (dutytypeid)
+        REFERENCES public.dutytype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.duty
+    OWNER to root;
+-- Index: fki_dutytypeid
+
+-- DROP INDEX IF EXISTS public.fki_dutytypeid;
+
+CREATE INDEX IF NOT EXISTS fki_dutytypeid
+    ON public.duty USING btree
+    (dutytypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+
+-- Table: public.finetype
+
+-- DROP TABLE IF EXISTS public.finetype;
+
+CREATE TABLE IF NOT EXISTS public.finetype
+(
+    id integer NOT NULL DEFAULT nextval('finetype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT finetype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.fine
+
+-- DROP TABLE IF EXISTS public.fine;
+
+CREATE TABLE IF NOT EXISTS public.fine
+(
+    id integer NOT NULL DEFAULT nextval('fine_id_seq'::regclass),
+    finetypeid integer NOT NULL,
+    price integer NOT NULL,
+    comment character varying COLLATE pg_catalog."default" NOT NULL,
+    contractid integer NOT NULL,
+    CONSTRAINT fine_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT finetypeid FOREIGN KEY (finetypeid)
+        REFERENCES public.finetype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+-- Index: fki_finetypeid
+
+-- DROP INDEX IF EXISTS public.fki_finetypeid;
+
+CREATE INDEX IF NOT EXISTS fki_finetypeid
+    ON public.fine USING btree
+    (finetypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+-- Table: public.liabilitytype
+
+-- DROP TABLE IF EXISTS public.liabilitytype;
+
+CREATE TABLE IF NOT EXISTS public.liabilitytype
+(
+    id integer NOT NULL DEFAULT nextval('liabilitytype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT liabilitytype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.liability
+
+-- DROP TABLE IF EXISTS public.liability;
+
+CREATE TABLE IF NOT EXISTS public.liability
+(
+    id integer NOT NULL DEFAULT nextval('liability_id_seq'::regclass),
+    liabilitytypeid integer NOT NULL,
+    contractid integer NOT NULL,
+    duedate date NOT NULL,
+    cost integer NOT NULL,
+    CONSTRAINT liability_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT liabilitytypeid FOREIGN KEY (liabilitytypeid)
+        REFERENCES public.liabilitytype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.liability
+    OWNER to root;
+-- Index: fki_liabilitytypeid
+
+-- DROP INDEX IF EXISTS public.fki_liabilitytypeid;
+
+CREATE INDEX IF NOT EXISTS fki_liabilitytypeid
+    ON public.liability USING btree
+    (liabilitytypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+-- Table: public.notificationtype
+
+-- DROP TABLE IF EXISTS public.notificationtype;
+
+CREATE TABLE IF NOT EXISTS public.notificationtype
+(
+    id integer NOT NULL DEFAULT nextval('notificationtype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT notificationtype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+
+-- Table: public.notification
+
+-- DROP TABLE IF EXISTS public.notification;
+
+CREATE TABLE IF NOT EXISTS public.notification
+(
+    id integer NOT NULL DEFAULT nextval('notification_id_seq'::regclass),
+    notificationtypeid integer NOT NULL,
+    contractid integer NOT NULL,
+    date date NOT NULL,
+    email character varying COLLATE pg_catalog."default" NOT NULL,
+    isrepeatitionallowed boolean NOT NULL,
+    CONSTRAINT notification_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT notificationtypeid FOREIGN KEY (notificationtypeid)
+        REFERENCES public.notificationtype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.notification
+    OWNER to root;
+-- Index: fki_notificationtypeid
+
+-- DROP INDEX IF EXISTS public.fki_notificationtypeid;
+
+CREATE INDEX IF NOT EXISTS fki_notificationtypeid
+    ON public.notification USING btree
+    (notificationtypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+
+
+
+-- Table: public.sign
+
+-- DROP TABLE IF EXISTS public.sign;
+
+CREATE TABLE IF NOT EXISTS public.sign
+(
+    id integer NOT NULL DEFAULT nextval('sign_id_seq'::regclass),
+    firstname character varying COLLATE pg_catalog."default" NOT NULL,
+    lastname character varying COLLATE pg_catalog."default" NOT NULL,
+    date date NOT NULL,
+    issigned boolean NOT NULL,
+    iscompletlysigned boolean NOT NULL,
+    contractid integer NOT NULL,
+    CONSTRAINT sign_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.categorytype
+
+-- DROP TABLE IF EXISTS public.categorytype;
+
+CREATE TABLE IF NOT EXISTS public.categorytype
+(
+    id integer NOT NULL DEFAULT nextval('categorytype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT categorytype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.categorytype
+    OWNER to root;
+
+
+
+
+-- Table: public.category
+
+-- DROP TABLE IF EXISTS public.category;
+
+CREATE TABLE IF NOT EXISTS public.category
+(
+    id integer NOT NULL DEFAULT nextval('category_id_seq'::regclass),
+    categorytypeid integer NOT NULL,
+    contractid integer NOT NULL,
+    comment character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT category_pkey PRIMARY KEY (id),
+    CONSTRAINT categorytypeid FOREIGN KEY (categorytypeid)
+        REFERENCES public.categorytype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.category
+    OWNER to root;
+-- Index: fki_categorytypeid
+
+-- DROP INDEX IF EXISTS public.fki_categorytypeid;
+
+CREATE INDEX IF NOT EXISTS fki_categorytypeid
+    ON public.category USING btree
+    (categorytypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+-- Table: public.claimtype
+
+-- DROP TABLE IF EXISTS public.claimtype;
+
+CREATE TABLE IF NOT EXISTS public.claimtype
+(
+    id integer NOT NULL DEFAULT nextval('claimtype_id_seq'::regclass),
+    type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT claimtype_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+
+
+
+-- Table: public.claim
+
+-- DROP TABLE IF EXISTS public.claim;
+
+CREATE TABLE IF NOT EXISTS public.claim
+(
+    id integer NOT NULL DEFAULT nextval('claim_id_seq'::regclass),
+    claimtypeid integer NOT NULL,
+    contractid integer NOT NULL,
+    duedate date NOT NULL,
+    cost integer NOT NULL,
+    CONSTRAINT claim_pkey PRIMARY KEY (id),
+    CONSTRAINT claimtypeid FOREIGN KEY (claimtypeid)
+        REFERENCES public.claimtype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+-- Index: fki_claimtypeid
+
+-- DROP INDEX IF EXISTS public.fki_claimtypeid;
+
+CREATE INDEX IF NOT EXISTS fki_claimtypeid
+    ON public.claim USING btree
+    (claimtypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+
+
+-- Table: public.claim
+
+-- DROP TABLE IF EXISTS public.claim;
+
+CREATE TABLE IF NOT EXISTS public.claim
+(
+    id integer NOT NULL DEFAULT nextval('claim_id_seq'::regclass),
+    claimtypeid integer NOT NULL,
+    contractid integer NOT NULL,
+    duedate date NOT NULL,
+    cost integer NOT NULL,
+    CONSTRAINT claim_pkey PRIMARY KEY (id),
+    CONSTRAINT claimtypeid FOREIGN KEY (claimtypeid)
+        REFERENCES public.claimtype (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.claim
+    OWNER to root;
+-- Index: fki_claimtypeid
+
+-- DROP INDEX IF EXISTS public.fki_claimtypeid;
+
+CREATE INDEX IF NOT EXISTS fki_claimtypeid
+    ON public.claim USING btree
+    (claimtypeid ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+
+
+
+-- Table: public.comment
+
+-- DROP TABLE IF EXISTS public.comment;
+
+CREATE TABLE IF NOT EXISTS public.comment
+(
+    id integer NOT NULL DEFAULT nextval('comment_id_seq'::regclass),
+    contractid integer NOT NULL,
+    text character varying COLLATE pg_catalog."default" NOT NULL,
+    date date NOT NULL,
+    username character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT comment_pkey PRIMARY KEY (id),
+    CONSTRAINT contractid FOREIGN KEY (contractid)
+        REFERENCES public.contract (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+
+INSERT INTO finetype(id, type) VALUES (1, 'start');
+INSERT INTO finetype(id, type) VALUES (2, 'middle');
+INSERT INTO finetype(id, type) VALUES (3, 'end');
+
+
+INSERT INTO  liabilitytype(id, type) VALUES (1, 'monthly');
+INSERT INTO  liabilitytype(id, type) VALUES (2, 'quarterly');
+INSERT INTO  liabilitytype(id, type) VALUES (3, 'annually');
+
+
+INSERT INTO  claimtype (id, type) VALUES (1, 'monthly');
+INSERT INTO  claimtype (id, type) VALUES (2, 'quarterly');
+INSERT INTO  claimtype(id, type) VALUES (3, 'annually');
