@@ -660,7 +660,7 @@ INSERT INTO  claimtype (id, type) VALUES (1, 'monthly');
 INSERT INTO  claimtype (id, type) VALUES (2, 'quarterly');
 INSERT INTO  claimtype(id, type) VALUES (3, 'annually');
 
-
+-- Insert into notificationtype
 INSERT INTO public.notificationtype (id, type) VALUES (1, 'Kündigung')
 INSERT INTO public.notificationtype (id, type) VALUES (2, 'Zahlung')
 INSERT INTO public.notificationtype (id, type) VALUES (3, 'Forderung')
