@@ -370,7 +370,7 @@
                     connection.Open();
                     IDbCommand cmd = connection.CreateCommand();
                     cmd.CommandText = @"insert into 
-                            department(contractid, departmenttypeid , personName)
+                            department(contractid, departmenttypeid , personname)
                             values(@ContractId, @DepartmentTypeId, @PersonName)";
 
 
