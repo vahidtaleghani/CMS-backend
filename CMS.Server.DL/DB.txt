@@ -645,17 +645,17 @@ CREATE TABLE IF NOT EXISTS public.comment
 
 TABLESPACE pg_default;
 
-
+-- Insert into finetype
 INSERT INTO finetype(id, type) VALUES (1, 'start');
 INSERT INTO finetype(id, type) VALUES (2, 'middle');
 INSERT INTO finetype(id, type) VALUES (3, 'end');
 
-
+-- Insert into liabilitytype
 INSERT INTO  liabilitytype(id, type) VALUES (1, 'monthly');
 INSERT INTO  liabilitytype(id, type) VALUES (2, 'quarterly');
 INSERT INTO  liabilitytype(id, type) VALUES (3, 'annually');
 
-
+-- Insert into claimtype
 INSERT INTO  claimtype (id, type) VALUES (1, 'monthly');
 INSERT INTO  claimtype (id, type) VALUES (2, 'quarterly');
 INSERT INTO  claimtype(id, type) VALUES (3, 'annually');
