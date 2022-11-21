@@ -370,12 +370,13 @@
                     connection.Open();
                     IDbCommand cmd = connection.CreateCommand();
                     cmd.CommandText = @"insert into 
-                            department(contractid, departmenttypeid)
-                            values(@ContractId, @DepartmentTypeId)";
+                            department(contractid, departmenttypeid , personName)
+                            values(@ContractId, @DepartmentTypeId, @PersonName)";
 
 
                     cmd.Parameters.Add(new NpgsqlParameter("@ContractId", department.ContactId));
                     cmd.Parameters.Add(new NpgsqlParameter("@DepartmentTypeId", department.DepartmentTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@PersonName", department.PersonName));
 
                     cmd.ExecuteNonQuery();
                     cmd.Dispose();
@@ -952,11 +953,12 @@
                     while (reader.Read())
                     {
                         int department_id = Convert.ToInt32(reader[0].ToString());
-                        int department_type_id = Convert.ToInt32(reader[1].ToString());
-                        int contact_id = Convert.ToInt32(reader[2].ToString());
+                        int contact_id = Convert.ToInt32(reader[1].ToString());
+                        int department_type_id = Convert.ToInt32(reader[2].ToString());
+                        string person_name = reader[3].ToString();
 
 
-                        departments.Add(new Department(department_id, contact_id, department_type_id));
+                        departments.Add(new Department(department_id, contact_id, department_type_id , person_name));
                     }
                     cmd.Dispose();
 
