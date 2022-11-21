@@ -659,3 +659,9 @@ INSERT INTO  liabilitytype(id, type) VALUES (3, 'annually');
 INSERT INTO  claimtype (id, type) VALUES (1, 'monthly');
 INSERT INTO  claimtype (id, type) VALUES (2, 'quarterly');
 INSERT INTO  claimtype(id, type) VALUES (3, 'annually');
+
+
+INSERT INTO public.notificationtype (id, type) VALUES (1, 'Kündigung')
+INSERT INTO public.notificationtype (id, type) VALUES (2, 'Zahlung')
+INSERT INTO public.notificationtype (id, type) VALUES (3, 'Forderung')
+INSERT INTO public.notificationtype (id, type) VALUES (4, 'Verlängerung')
