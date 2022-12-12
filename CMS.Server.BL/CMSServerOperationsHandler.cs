@@ -135,6 +135,14 @@
             return new CreateResponse(false, liabilityResponse.Message);
         }
 
+        public UpdateResponse UpdateLiability(Liability liability)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateLiability(liability);
+        }
+        public DeleteResponse DeleteLiability(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteLiabilityById(id);
+        }
         public CreateResponse CreateClaim(Claim claim, string userToken)
         {
             if (claim.Id != 0)
@@ -183,10 +191,7 @@
             return this._cmsDatabase.ContractRepository.UpdateAddress(address);
         }
 
-        public UpdateResponse UpdateLiability(Liability liability)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateLiability(liability);
-        }
+        
 
         public ReadResponse<List<Liability>> ReadLiability(string userToken)
         {

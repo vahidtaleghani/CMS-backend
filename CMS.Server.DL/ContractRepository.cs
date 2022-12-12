@@ -17,9 +17,47 @@
             this._configData = configData;
         }
 
-        // send
+        /// <summary>
+        /// Create
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public CreateResponse CreateAddress(Address address)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = @"insert into 
+                            address(street, postalcode, city, housenumber, contractorid)
+                            values(@Street, @PostalCode, @City, @HouseNumber, @ContractorId)";
 
-        // Finished.
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Street", address.Street));
+                    cmd.Parameters.Add(new NpgsqlParameter("@HouseNumber", address.HouseNumber));
+                    cmd.Parameters.Add(new NpgsqlParameter("@PostalCode", address.PostalCode));
+                    cmd.Parameters.Add(new NpgsqlParameter("@City", address.City));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractorId", address.ContractorId));
+
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception)
+                {
+                    return new CreateResponse(false, "Due to some error Address data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new CreateResponse(true, "Address data has been added successfully.");
+            }
+
+        }
         public CreateResponse CreateContract(Contract contract)
         {
             using (IDbConnection connection = this.Connect)
@@ -51,8 +89,6 @@
                 }
             }
         }
-
-        // Finished.
         public CreateResponse CreateInfo(Info info)
         {
             if (info.ProjectName is null)
@@ -101,162 +137,6 @@
             }
 
         }
-
-        // Finished.
-        public ReadResponse<bool> HasInfoAlreadyCreated(int contractId)
-        {
-            bool isFound = false;
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from info where contractid = @ContractId";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", contractId));
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        isFound = true;
-                    }
-                    cmd.Dispose();
-
-                    return new ReadResponse<bool>(true, "Id is fetched successfully", isFound);
-                }
-                catch (Exception ex)
-                {
-                    return new ReadResponse<bool>(false, "Id cant be fetched", isFound);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-
-        // Finished.
-        public UpdateResponse UpdateInfo(Info info)
-        {
-            if (info.ProjectName is null)
-            {
-                info.ProjectName = "empty";
-            }
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "update info set \"contractid\"=@ContractId, \"contractstatusid\"=@ContractStatusId, \"contracttypeid\"=@ContractTypeId, \"istemporary\"=@IsTemporary, \"startdate\"=@StartDate, \"enddate\"=@EndDate, \"terminationperiod\"=@TerminationPeriod, \"expdate\"=@ExpDate, \"isreferenced\"=@IsReferenceToAnotherProject, \"projectid\"=@ProjectId, \"projectname\"=@ProjectName, \"comment\"=@Comment  WHERE \"contractid\"=@ContractId;";
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", info.ContractId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractStatusId", info.ContractStatusId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractTypeId", info.ContractTypeId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsTemporary", info.IsTemporary));
-                    cmd.Parameters.Add(new NpgsqlParameter("@StartDate", info.StartDate));
-                    cmd.Parameters.Add(new NpgsqlParameter("@EndDate", info.EndDate));
-                    cmd.Parameters.Add(new NpgsqlParameter("@TerminationPeriod", info.TerminationPeriod));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ExpDate", info.ExpDate));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsReferenceToAnotherProject", info.IsReferencedToAnotherProject));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ProjectId", info.ProjectId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ProjectName", info.ProjectName));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", info.Comment));
-
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    return new UpdateResponse(false, "Due to some error info data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new UpdateResponse(true, "Info data has been added successfully.");
-            }
-        }
-        public CreateResponse CreateAddress(Address address)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = @"insert into 
-                            address(street, postalcode, city, housenumber, contractorid)
-                            values(@Street, @PostalCode, @City, @HouseNumber, @ContractorId)";
-
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@Street", address.Street));
-                    cmd.Parameters.Add(new NpgsqlParameter("@HouseNumber", address.HouseNumber));
-                    cmd.Parameters.Add(new NpgsqlParameter("@PostalCode", address.PostalCode));
-                    cmd.Parameters.Add(new NpgsqlParameter("@City", address.City));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractorId", address.ContractorId));
-
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception)
-                {
-                    return new CreateResponse(false, "Due to some error Address data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new CreateResponse(true, "Address data has been added successfully.");
-            }
-
-        }
-
-        // Finished.
-        public ReadResponse<int> GetLastId(string tableName)
-        {
-            int id = 0;
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = $"Select * from {tableName}";
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        if (Convert.ToInt32((reader[0].ToString())) > id)
-                        {
-                            id = Convert.ToInt32((reader[0].ToString()));
-                        }
-                    }
-                    cmd.Dispose();
-
-                    return new ReadResponse<int>(true, "last id is fetched", id);
-                }
-                catch (Exception ex)
-                {
-                    return new ReadResponse<int>(false, "last id cant be fetched", -1);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-
         public CreateResponse CreateContractor(Contractor contractor)
         {
             using (IDbConnection connection = this.Connect)
@@ -426,9 +306,270 @@
                 return new CreateResponse(true, "Fine data has been added successfully.");
             }
         }
+        public CreateResponse CreateDepartments(List<Department> departments)
+        {
+            bool isCreated = false;
 
-        // get 
+            foreach (var department in departments)
+            {
+                isCreated = this.CreateDepartment(department).IsExecuted;
+            }
 
+            if (isCreated)
+            {
+                return new CreateResponse(true, "Departments are created.");
+            }
+
+            return new CreateResponse(false, "Departments cant be created.");
+        }
+        public CreateResponse CreateCategory(Category category)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = @"insert into 
+                            category(contractid, categorytypeid, comment)
+                            values(@ContractId, @CategoryTypeId, @Comment)";
+
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", category.ContractId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@CategoryTypeId", category.CategoryTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", category.Comment));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception)
+                {
+                    return new CreateResponse(false, "Due to some error Category data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new CreateResponse(true, "Category data has been added successfully.");
+
+            }
+        }
+        public CreateResponse CreateDuty(Duty duty)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = @"insert into 
+                            duty(date, dutytypeid, comment, contractid)
+                            values(@Date, @DutyTypeId, @Comment, @ContractId)";
+
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", duty.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@DutyTypeId", duty.DutyTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", duty.Comment));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", duty.ContractId));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new CreateResponse(false, "Due to some error duty data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new CreateResponse(true, "duty data has been added successfully.");
+            }
+        }
+        public CreateResponse CreateNotification(Notification notification)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = @"insert into 
+                            notification(notificationtypeid, contractid, date, email, isrepeatitionallowed)
+                            values(@NotificationTypeId, @ContractId, @Date, @Email, @IsRepeatitionAllowed)";
+
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@NotificationTypeId", notification.NotificationTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", notification.ContractId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", notification.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Email", notification.Email));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsRepeatitionAllowed", notification.IsRepeatitionAllowed));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception)
+                {
+                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new CreateResponse(true, "Notification data has been added successfully.");
+
+            }
+
+        }
+        public CreateResponse CreateComment(Comment comment)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = @"insert into 
+                            comment(contractid, text, date, username)
+                            values(@ContractId, @Text, @Date, @Username)";
+
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", comment.ContractId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Text", comment.Text));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", comment.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Username", comment.Username));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception)
+                {
+                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new CreateResponse(true, "Notification data has been added successfully.");
+
+            }
+        }
+        public CreateResponse CreateSign(Sign sign)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = @"insert into 
+                            sign(firstname, lastname, date, issigned, iscompletlysigned, contractid)
+                            values(@Firstname, @Lastname, @Date, @IsSigned, @IsCompletlySigned, @ContractId)";
+
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Firstname", sign.FirstName));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Lastname", sign.LastName));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", sign.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsSigned", sign.IsSigned));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsCompletlySigned", sign.IsCompletlySigned));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", sign.ContractId));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception)
+                {
+                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new CreateResponse(true, "Notification data has been added successfully.");
+
+            }
+        }
+
+
+        /// <summary>
+        /// Read
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public ReadResponse<bool> HasInfoAlreadyCreated(int contractId)
+        {
+            bool isFound = false;
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from info where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", contractId));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        isFound = true;
+                    }
+                    cmd.Dispose();
+
+                    return new ReadResponse<bool>(true, "Id is fetched successfully", isFound);
+                }
+                catch (Exception ex)
+                {
+                    return new ReadResponse<bool>(false, "Id cant be fetched", isFound);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<int> GetLastId(string tableName)
+        {
+            int id = 0;
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = $"Select * from {tableName}";
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        if (Convert.ToInt32((reader[0].ToString())) > id)
+                        {
+                            id = Convert.ToInt32((reader[0].ToString()));
+                        }
+                    }
+                    cmd.Dispose();
+
+                    return new ReadResponse<int>(true, "last id is fetched", id);
+                }
+                catch (Exception ex)
+                {
+                    return new ReadResponse<int>(false, "last id cant be fetched", -1);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
         public ReadResponse<int> ReadContractIdByUsertoken(string userToken)
         {
             int id = 0;
@@ -737,7 +878,6 @@
                 }
             }
         }
-
         public ReadResponse<List<LiabilityType>> ReadLiabilityType()
         {
             List<LiabilityType> liabilityTypes = new List<LiabilityType>();
@@ -1052,6 +1192,418 @@
                 }
             }
         }
+        public ReadResponse<List<CategoryType>> ReadCategoryType()
+        {
+            List<CategoryType> categoryTypes = new List<CategoryType>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from categorytype";
+                    cmd.CommandType = CommandType.Text;
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int category_type_id = Convert.ToInt32(reader[0].ToString());
+                        string type = reader[1].ToString();
+
+                        categoryTypes.Add(new CategoryType(category_type_id, type));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "CategoryType are fetched successfully", categoryTypes);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "CategoryType are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<Category>> ReadCategory(int id)
+        {
+            List<Category> categories = new List<Category>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from category where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int category_id = Convert.ToInt32(reader[0].ToString());
+                        int category_type_id = Convert.ToInt32(reader[1].ToString());
+                        int contract_id = Convert.ToInt32(reader[2].ToString());
+                        string comment = reader[3].ToString();
+
+                        categories.Add(new Category(category_id, contract_id, category_type_id, comment));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Fine are fetched successfully", categories);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Fine are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<DutyType>> ReadDutyType()
+        {
+            List<DutyType> dutyTypes = new List<DutyType>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from dutytype";
+                    cmd.CommandType = CommandType.Text;
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int due_type_id = Convert.ToInt32(reader[0].ToString());
+                        string type = reader[1].ToString();
+
+                        dutyTypes.Add(new DutyType(due_type_id, type));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "DutyType are fetched successfully", dutyTypes);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "DutyType are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<Duty>> ReadDuty(int id)
+        {
+            List<Duty> duties = new List<Duty>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from duty where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int duty_id = Convert.ToInt32(reader[0].ToString());
+                        int contract_id = Convert.ToInt32(reader[1].ToString());
+                        int duty_type_id = Convert.ToInt32(reader[2].ToString());
+                        DateTime duty_date = Convert.ToDateTime(reader[3].ToString());
+                        string comment = reader[4].ToString();
+
+                        duties.Add(new Duty(duty_id, duty_date, duty_type_id, comment, contract_id));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Fine are fetched successfully", duties);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Fine are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<NotificationType>> ReadNotificationType()
+        {
+            var NotificationTypes = new List<NotificationType>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from notificationtype";
+                    cmd.CommandType = CommandType.Text;
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int due_type_id = Convert.ToInt32(reader[0].ToString());
+                        string type = reader[1].ToString();
+
+                        NotificationTypes.Add(new NotificationType(due_type_id, type));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Notification Types are fetched successfully", NotificationTypes);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Notification Types are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<Notification>> ReadNotification(int id)
+        {
+            var notification = new List<Notification>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from notification where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int notificationId = Convert.ToInt32(reader[0].ToString());
+                        int notificationTypeId = Convert.ToInt32(reader[1].ToString());
+                        int contractId = Convert.ToInt32(reader[2].ToString());
+                        DateTime date = Convert.ToDateTime(reader[3].ToString());
+                        string email = reader[4].ToString();
+                        bool isRepeatitionAllowed = Convert.ToBoolean(reader[5].ToString());
+
+                        notification.Add(new Notification(notificationId, date, notificationTypeId, email, isRepeatitionAllowed, contractId));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Notifications are fetched successfully", notification);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Notifications cant be fetched.", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<Comment>> ReadComment(int id)
+        {
+            var comments = new List<Comment>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from comment where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int commentId = Convert.ToInt32(reader[0].ToString());
+                        int contractId = Convert.ToInt32(reader[1].ToString());
+                        string text = reader[2].ToString();
+                        DateTime date = Convert.ToDateTime(reader[3].ToString());
+                        string username = reader[4].ToString();
+
+                        comments.Add(new Comment(commentId, text, date, username, contractId));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Comments are fetched successfully", comments);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Comments cant be fetched.", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<Sign>> ReadSign(int id)
+        {
+            var signs = new List<Sign>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from sign where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int signId = Convert.ToInt32(reader[0].ToString());
+                        string firstname = reader[1].ToString();
+                        string lastname = reader[2].ToString();
+                        DateTime date = Convert.ToDateTime(reader[3].ToString());
+                        bool isSigned = Convert.ToBoolean(reader[4].ToString());
+                        bool isCompletlySigned = Convert.ToBoolean(reader[5].ToString());
+                        int contractId = Convert.ToInt32(reader[6].ToString());
+
+                        signs.Add(new Sign(signId, date, firstname, lastname, isSigned, isCompletlySigned, contractId));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Comments are fetched successfully", signs);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Comments cant be fetched.", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<bool> IsContractActive(string userToken)
+        {
+            bool isActive = false;
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select status from contract where usertoken = @Usertoken AND status = @Status";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@UserToken", userToken));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "active"));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        isActive = true;
+                    }
+
+                    cmd.Dispose();
+
+                    if (isActive)
+                    {
+                        return new(true, "Contract is active", true);
+                    }
+
+                    return new(true, "Contract is already inactive", false);
+
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Comments cant be fetched.", false);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Update
+        /// </summary>
+        /// <param name="address"></param>
+        /// <returns></returns>
+        public UpdateResponse UpdateInfo(Info info)
+        {
+            if (info.ProjectName is null)
+            {
+                info.ProjectName = "empty";
+            }
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update info set \"contractid\"=@ContractId, \"contractstatusid\"=@ContractStatusId, \"contracttypeid\"=@ContractTypeId, \"istemporary\"=@IsTemporary, \"startdate\"=@StartDate, \"enddate\"=@EndDate, \"terminationperiod\"=@TerminationPeriod, \"expdate\"=@ExpDate, \"isreferenced\"=@IsReferenceToAnotherProject, \"projectid\"=@ProjectId, \"projectname\"=@ProjectName, \"comment\"=@Comment  WHERE \"contractid\"=@ContractId;";
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", info.ContractId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractStatusId", info.ContractStatusId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractTypeId", info.ContractTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsTemporary", info.IsTemporary));
+                    cmd.Parameters.Add(new NpgsqlParameter("@StartDate", info.StartDate));
+                    cmd.Parameters.Add(new NpgsqlParameter("@EndDate", info.EndDate));
+                    cmd.Parameters.Add(new NpgsqlParameter("@TerminationPeriod", info.TerminationPeriod));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ExpDate", info.ExpDate));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsReferenceToAnotherProject", info.IsReferencedToAnotherProject));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ProjectId", info.ProjectId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ProjectName", info.ProjectName));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", info.Comment));
+
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some error info data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "Info data has been added successfully.");
+            }
+        }
         public UpdateResponse UpdateAddress(Address address)
         {
             using (IDbConnection connection = this.Connect)
@@ -1213,22 +1765,195 @@
                 return new UpdateResponse(true, "contractor data has been added successfully.");
             }
         }
-        public CreateResponse CreateDepartments(List<Department> departments)
+        public UpdateResponse UpdateCategory(Category category)
         {
-            bool isCreated = false;
-
-            foreach (var department in departments)
+            using (IDbConnection connection = this.Connect)
             {
-                isCreated = this.CreateDepartment(department).IsExecuted;
-            }
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update category set \"categorytypeid\"=@CategoryTypeId,\"comment\"=@Comment WHERE \"id\"=@Id;";
 
-            if (isCreated)
-            {
-                return new CreateResponse(true, "Departments are created.");
-            }
+                    cmd.Parameters.Add(new NpgsqlParameter("@CategoryTypeId", category.CategoryTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", category.Comment));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", category.Id));
 
-            return new CreateResponse(false, "Departments cant be created.");
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "contractor data has been added successfully.");
+            }
         }
+        public UpdateResponse UpdateNotification(Notification notification)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update notification set \"notificationtypeid\"=@NotificationTypeId,\"date\"=@Date,\"email\"=@Email,\"isrepeatitionallowed\"=@IsRepeatitionAllowed WHERE \"id\"=@Id;";
+
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@NotificationTypeId", notification.NotificationTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", notification.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Email", notification.Email));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsRepeatitionAllowed", notification.IsRepeatitionAllowed));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", notification.Id));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "contractor data has been added successfully.");
+            }
+        }
+        public UpdateResponse UpdateComment(Comment comment)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update comment set \"text\"=@Text,\"date\"=@Date,\"username\"=@Username WHERE \"id\"=@Id;";
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Text", comment.Text));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", comment.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Username", comment.Username));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", comment.Id));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "contractor data has been added successfully.");
+            }
+        }
+        public UpdateResponse UpdateContractStatus(string userToken)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update contract set \"status\"=@Status WHERE \"usertoken\"=@UserToken;";
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "inactive"));
+                    cmd.Parameters.Add(new NpgsqlParameter("@UserToken", userToken));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some reason status cant be changed.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "status has been changed successfully.");
+            }
+        }
+        public UpdateResponse UpdateDuty(Duty duty)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update duty set \"date\"=@Date,\"dutytypeid\"=@Dutytypeid,\"comment\"=@Comment WHERE \"id\"=@Id;";
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", duty.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@DutyTypeId", duty.DutyTypeId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", duty.Comment));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", duty.Id));
+
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "contractor data has been added successfully.");
+            }
+        }
+        public UpdateResponse UpdateSign(Sign sign)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update sign set \"firstname\"=@Firstname,\"lastname\"=@Lastname,\"date\"=@Date,\"issigned\"=@IsSigned,\"iscompletlysigned\"=@IsCompletlySigned WHERE \"id\"=@Id;";
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Firstname", sign.FirstName));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Lastname", sign.LastName));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", sign.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsSigned", sign.IsSigned));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsCompletlySigned", sign.IsCompletlySigned));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", sign.Id));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "contractor data has been added successfully.");
+            }
+        }
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public DeleteResponse DeleteDepartment(int id)
         {
             using (IDbConnection connection = this.Connect)
@@ -1272,732 +1997,32 @@
 
             return new DeleteResponse(true, "Departments cant be deleted!");
         }
-        public ReadResponse<List<CategoryType>> ReadCategoryType()
+        public DeleteResponse DeleteLiabilityById(int id)
         {
-            List<CategoryType> categoryTypes = new List<CategoryType>();
-
             using (IDbConnection connection = this.Connect)
             {
                 try
                 {
                     connection.Open();
                     IDbCommand cmd = connection.CreateCommand();
-
                     cmd.Connection = connection;
-                    cmd.CommandText = "Select * from categorytype";
+                    cmd.CommandText = "DELETE FROM liability WHERE \"id\"=@id;";
                     cmd.CommandType = CommandType.Text;
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int category_type_id = Convert.ToInt32(reader[0].ToString());
-                        string type = reader[1].ToString();
-
-                        categoryTypes.Add(new CategoryType(category_type_id, type));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "CategoryType are fetched successfully", categoryTypes);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "CategoryType are fetched Unsuccessfully", null);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-        public ReadResponse<List<Category>> ReadCategory(int id)
-        {
-            List<Category> categories = new List<Category>();
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from category where contractid = @ContractId";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int category_id = Convert.ToInt32(reader[0].ToString());
-                        int category_type_id = Convert.ToInt32(reader[1].ToString());
-                        int contract_id = Convert.ToInt32(reader[2].ToString());
-                        string comment = reader[3].ToString();
-
-                        categories.Add(new Category(category_id, contract_id, category_type_id, comment));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "Fine are fetched successfully", categories);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "Fine are fetched Unsuccessfully", null);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-        public ReadResponse<List<DutyType>> ReadDutyType()
-        {
-            List<DutyType> dutyTypes = new List<DutyType>();
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from dutytype";
-                    cmd.CommandType = CommandType.Text;
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int due_type_id = Convert.ToInt32(reader[0].ToString());
-                        string type = reader[1].ToString();
-
-                        dutyTypes.Add(new DutyType(due_type_id, type));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "DutyType are fetched successfully", dutyTypes);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "DutyType are fetched Unsuccessfully", null);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-        public ReadResponse<List<Duty>> ReadDuty(int id)
-        {
-            List<Duty> duties = new List<Duty>();
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from duty where contractid = @ContractId";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int duty_id = Convert.ToInt32(reader[0].ToString());
-                        int contract_id = Convert.ToInt32(reader[1].ToString());
-                        int duty_type_id = Convert.ToInt32(reader[2].ToString());
-                        DateTime duty_date = Convert.ToDateTime(reader[3].ToString());
-                        string comment = reader[4].ToString();
-
-                        duties.Add(new Duty(duty_id, duty_date, duty_type_id, comment, contract_id));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "Fine are fetched successfully", duties);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "Fine are fetched Unsuccessfully", null);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-        public CreateResponse CreateCategory(Category category)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = @"insert into 
-                            category(contractid, categorytypeid, comment)
-                            values(@ContractId, @CategoryTypeId, @Comment)";
-
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", category.ContractId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@CategoryTypeId", category.CategoryTypeId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", category.Comment));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception)
-                {
-                    return new CreateResponse(false, "Due to some error Category data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new CreateResponse(true, "Category data has been added successfully.");
-
-            }
-        }
-        public CreateResponse CreateDuty(Duty duty)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = @"insert into 
-                            duty(date, dutytypeid, comment, contractid)
-                            values(@Date, @DutyTypeId, @Comment, @ContractId)";
-
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", duty.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@DutyTypeId", duty.DutyTypeId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", duty.Comment));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", duty.ContractId));
-
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
                     cmd.ExecuteNonQuery();
                     cmd.Dispose();
                 }
                 catch (Exception ex)
                 {
-                    return new CreateResponse(false, "Due to some error duty data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new CreateResponse(true, "duty data has been added successfully.");
-            }
-        }
-        public UpdateResponse UpdateCategory(Category category)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "update category set \"categorytypeid\"=@CategoryTypeId,\"comment\"=@Comment WHERE \"id\"=@Id;";
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@CategoryTypeId", category.CategoryTypeId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", category.Comment));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Id", category.Id));
-
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new UpdateResponse(true, "contractor data has been added successfully.");
-            }
-        }
-        public UpdateResponse UpdateDuty(Duty duty)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "update duty set \"date\"=@Date,\"dutytypeid\"=@Dutytypeid,\"comment\"=@Comment WHERE \"id\"=@Id;";
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", duty.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@DutyTypeId", duty.DutyTypeId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", duty.Comment));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Id", duty.Id));
-
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new UpdateResponse(true, "contractor data has been added successfully.");
-            }
-        }
-        public CreateResponse CreateNotification(Notification notification)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = @"insert into 
-                            notification(notificationtypeid, contractid, date, email, isrepeatitionallowed)
-                            values(@NotificationTypeId, @ContractId, @Date, @Email, @IsRepeatitionAllowed)";
-
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@NotificationTypeId", notification.NotificationTypeId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", notification.ContractId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", notification.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Email", notification.Email));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsRepeatitionAllowed", notification.IsRepeatitionAllowed));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception)
-                {
-                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new CreateResponse(true, "Notification data has been added successfully.");
-
-            }
-
-        }
-
-        public UpdateResponse UpdateNotification(Notification notification)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "update notification set \"notificationtypeid\"=@NotificationTypeId,\"date\"=@Date,\"email\"=@Email,\"isrepeatitionallowed\"=@IsRepeatitionAllowed WHERE \"id\"=@Id;";
-
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@NotificationTypeId", notification.NotificationTypeId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", notification.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Email", notification.Email));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsRepeatitionAllowed", notification.IsRepeatitionAllowed));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Id", notification.Id));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new UpdateResponse(true, "contractor data has been added successfully.");
-            }
-        }
-
-        public ReadResponse<List<NotificationType>> ReadNotificationType()
-        {
-            var NotificationTypes = new List<NotificationType>();
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from notificationtype";
-                    cmd.CommandType = CommandType.Text;
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int due_type_id = Convert.ToInt32(reader[0].ToString());
-                        string type = reader[1].ToString();
-
-                        NotificationTypes.Add(new NotificationType(due_type_id, type));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "Notification Types are fetched successfully", NotificationTypes);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "Notification Types are fetched Unsuccessfully", null);
+                    return new DeleteResponse(false, "liability cant be deleted!");
                 }
                 finally
                 {
                     connection.Close();
                 }
             }
-        }
 
-        public ReadResponse<List<Notification>> ReadNotification(int id)
-        {
-            var notification = new List<Notification>();
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from notification where contractid = @ContractId";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int notificationId = Convert.ToInt32(reader[0].ToString());
-                        int notificationTypeId = Convert.ToInt32(reader[1].ToString());
-                        int contractId = Convert.ToInt32(reader[2].ToString());
-                        DateTime date = Convert.ToDateTime(reader[3].ToString());
-                        string email = reader[4].ToString();
-                        bool isRepeatitionAllowed = Convert.ToBoolean(reader[5].ToString());
-
-                        notification.Add(new Notification(notificationId, date, notificationTypeId, email, isRepeatitionAllowed, contractId));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "Notifications are fetched successfully", notification);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "Notifications cant be fetched.", null);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-
-        public CreateResponse CreateComment(Comment comment)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = @"insert into 
-                            comment(contractid, text, date, username)
-                            values(@ContractId, @Text, @Date, @Username)";
-
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", comment.ContractId));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Text", comment.Text));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", comment.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Username", comment.Username));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception)
-                {
-                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new CreateResponse(true, "Notification data has been added successfully.");
-
-            }
-        }
-
-        public UpdateResponse UpdateComment(Comment comment)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "update comment set \"text\"=@Text,\"date\"=@Date,\"username\"=@Username WHERE \"id\"=@Id;";
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@Text", comment.Text));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", comment.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Username", comment.Username));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Id", comment.Id));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new UpdateResponse(true, "contractor data has been added successfully.");
-            }
-        }
-
-        public ReadResponse<List<Comment>> ReadComment(int id)
-        {
-            var comments = new List<Comment>();
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from comment where contractid = @ContractId";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int commentId = Convert.ToInt32(reader[0].ToString());
-                        int contractId = Convert.ToInt32(reader[1].ToString());
-                        string text = reader[2].ToString();
-                        DateTime date = Convert.ToDateTime(reader[3].ToString());
-                        string username = reader[4].ToString();
-
-                        comments.Add(new Comment(commentId, text, date, username, contractId));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "Comments are fetched successfully", comments);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "Comments cant be fetched.", null);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-
-        public CreateResponse CreateSign(Sign sign)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = @"insert into 
-                            sign(firstname, lastname, date, issigned, iscompletlysigned, contractid)
-                            values(@Firstname, @Lastname, @Date, @IsSigned, @IsCompletlySigned, @ContractId)";
-
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@Firstname", sign.FirstName));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Lastname", sign.LastName));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", sign.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsSigned", sign.IsSigned));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsCompletlySigned", sign.IsCompletlySigned));
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", sign.ContractId));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception)
-                {
-                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new CreateResponse(true, "Notification data has been added successfully.");
-
-            }
-        }
-
-        public UpdateResponse UpdateSign(Sign sign)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "update sign set \"firstname\"=@Firstname,\"lastname\"=@Lastname,\"date\"=@Date,\"issigned\"=@IsSigned,\"iscompletlysigned\"=@IsCompletlySigned WHERE \"id\"=@Id;";
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@Firstname", sign.FirstName));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Lastname", sign.LastName));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Date", sign.Date));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsSigned", sign.IsSigned));
-                    cmd.Parameters.Add(new NpgsqlParameter("@IsCompletlySigned", sign.IsCompletlySigned));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Id", sign.Id));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    return new UpdateResponse(false, "Due to some error contractor data cant be added.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new UpdateResponse(true, "contractor data has been added successfully.");
-            }
-        }
-
-        public ReadResponse<List<Sign>> ReadSign(int id)
-        {
-            var signs = new List<Sign>();
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select * from sign where contractid = @ContractId";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        int signId = Convert.ToInt32(reader[0].ToString());
-                        string firstname = reader[1].ToString();
-                        string lastname = reader[2].ToString();
-                        DateTime date = Convert.ToDateTime(reader[3].ToString());
-                        bool isSigned = Convert.ToBoolean(reader[4].ToString());
-                        bool isCompletlySigned = Convert.ToBoolean(reader[5].ToString());
-                        int contractId = Convert.ToInt32(reader[6].ToString());
-
-                        signs.Add(new Sign(signId, date, firstname, lastname, isSigned, isCompletlySigned, contractId));
-                    }
-                    cmd.Dispose();
-
-                    return new(true, "Comments are fetched successfully", signs);
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "Comments cant be fetched.", null);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-
-        public ReadResponse<bool> IsContractActive(string userToken)
-        {
-            bool isActive = false;
-
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-
-                    cmd.Connection = connection;
-                    cmd.CommandText = "Select status from contract where usertoken = @Usertoken AND status = @Status";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.Parameters.Add(new NpgsqlParameter("@UserToken", userToken));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "active"));
-                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        isActive = true;
-                    }
-
-                    cmd.Dispose();
-
-                    if (isActive)
-                    {
-                        return new(true, "Contract is active", true);
-                    }
-
-                    return new(true, "Contract is already inactive", false);
-
-                }
-                catch (Exception ex)
-                {
-                    return new(false, "Comments cant be fetched.", false);
-                }
-                finally
-                {
-                    connection.Close();
-                }
-            }
-        }
-
-        public UpdateResponse UpdateContractStatus(string userToken)
-        {
-            using (IDbConnection connection = this.Connect)
-            {
-                try
-                {
-                    connection.Open();
-                    IDbCommand cmd = connection.CreateCommand();
-                    cmd.CommandText = "update contract set \"status\"=@Status WHERE \"usertoken\"=@UserToken;";
-
-                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "inactive"));
-                    cmd.Parameters.Add(new NpgsqlParameter("@UserToken", userToken));
-
-                    cmd.ExecuteNonQuery();
-                    cmd.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    return new UpdateResponse(false, "Due to some reason status cant be changed.");
-                }
-                finally
-                {
-                    connection.Close();
-                }
-
-                return new UpdateResponse(true, "status has been changed successfully.");
-            }
+            return new DeleteResponse(true, "liability is deleted successfully!");
         }
     }
 }

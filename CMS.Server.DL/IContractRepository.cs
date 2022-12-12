@@ -19,6 +19,7 @@
         public CreateResponse CreateDepartment(Department department);
         public CreateResponse CreateDepartments(List<Department> departments);
         public DeleteResponse DeleteDepartment(int id);
+        public DeleteResponse DeleteLiabilityById(int id);
         public DeleteResponse DeleteDepartments(List<int> idCollection);
         public CreateResponse CreateFine(Fine fine);
         public ReadResponse<List<ContractStatus>> ReadContractStatusType();
