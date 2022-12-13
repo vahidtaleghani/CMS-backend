@@ -36,6 +36,7 @@ namespace CMS.Server.Api
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
 
+
         [HttpGet]
         public ActionResult Get()
         {
@@ -44,6 +45,19 @@ namespace CMS.Server.Api
             if (response.IsExecuted)
             {
                 return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+            }
+
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult Delete(int id)
+        {
+            var response = this._cmsServerOperationHandler.DeleteClaim(id);
+
+            if (response.IsExecuted)
+            {
+                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
             }
 
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
