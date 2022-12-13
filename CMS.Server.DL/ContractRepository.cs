@@ -1098,7 +1098,7 @@
                         string person_name = reader[3].ToString();
 
 
-                        departments.Add(new Department(department_id, contact_id, department_type_id , person_name));
+                        departments.Add(new Department(department_id, contact_id, department_type_id, person_name));
                     }
                     cmd.Dispose();
 
@@ -2023,6 +2023,222 @@
             }
 
             return new DeleteResponse(true, "liability is deleted successfully!");
+        }
+        public DeleteResponse DeleteClaimById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM claim WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "claim cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "claim is deleted successfully!");
+        }
+        public DeleteResponse DeleteDepartmentById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM department WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "department cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "department is deleted successfully!");
+        }
+        public DeleteResponse DeleteFineById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM fine WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "fine cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "fine is deleted successfully!");
+        }
+        public DeleteResponse DeleteCategoryById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM category WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "category cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "category is deleted successfully!");
+        }
+        public DeleteResponse DeleteDutyById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM duty WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "duty cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "duty is deleted successfully!");
+        }
+        public DeleteResponse DeleteNotificationById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM notification WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "notification cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "notification is deleted successfully!");
+        }
+        public DeleteResponse DeleteCommentById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM comment WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "comment cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "comment is deleted successfully!");
+        }
+        public DeleteResponse DeleteSignById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM sign WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "sign cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "sign is deleted successfully!");
         }
     }
 }

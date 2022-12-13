@@ -20,6 +20,11 @@
             this._cmsDatabase = new CMSDatabase();
         }
 
+        /// <summary>
+        /// Create
+        /// </summary>
+        /// <param name="contract"></param>
+        /// <returns></returns>
         public CreateResponse CreateContract(Contract contract)
         {
             var updateContractStatusResposne = this.UpdateContractStatus(contract.Usertoken);
@@ -31,12 +36,6 @@
 
             return new CreateResponse(false, updateContractStatusResposne.Message);
         }
-
-        public UpdateResponse UpdateContractStatus(string userToken)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateContractStatus(userToken);
-        }
-
         public CreateResponse CreateInfo(Info info, string userToken)
         {
             var response = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken);
@@ -52,22 +51,6 @@
 
             return this._cmsDatabase.ContractRepository.CreateInfo(info);
         }
-
-        public ReadResponse<List<ContractType>> ReadAllContractType()
-        {
-            return this._cmsDatabase.ContractRepository.ReadContractType();
-        }
-
-        public ReadResponse<List<ContractStatus>> ReadAllContractStatus()
-        {
-            return this._cmsDatabase.ContractRepository.ReadContractStatusType();
-        }
-
-        public ReadResponse<Info> ReadInfoByUserToken(string userToken)
-        {
-            return this._cmsDatabase.ContractRepository.ReadInfoByUserToken(userToken);
-        }
-
         public CreateResponse CreateContractor(Contractor contractor, string userToken)
         {
             if (contractor.Id != 0)
@@ -108,7 +91,6 @@
 
             return new CreateResponse(false, contractorResponse.Message);
         }
-
         public CreateResponse CreateLiability(Liability liability, string userToken)
         {
             if (liability.Id != 0)
@@ -134,14 +116,45 @@
 
             return new CreateResponse(false, liabilityResponse.Message);
         }
+        public CreateResponse CreateNotification(Notification notification, string userToken)
+        {
+            if (notification.Id != 0)
+            {
+                var updateNotificationResponse = this.UpdateNotification(notification);
 
-        public UpdateResponse UpdateLiability(Liability liability)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateLiability(liability);
+                if (updateNotificationResponse.IsExecuted)
+                {
+                    return new CreateResponse(updateNotificationResponse.IsExecuted, updateNotificationResponse.Message);
+                }
+
+                return new CreateResponse(updateNotificationResponse.IsExecuted, updateNotificationResponse.Message);
+            }
+
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            notification.ContractId = contractId;
+
+            return this._cmsDatabase.ContractRepository.CreateNotification(notification);
         }
-        public DeleteResponse DeleteLiability(int id)
+        public CreateResponse CreateComment(Comment comment, string userToken)
         {
-            return this._cmsDatabase.ContractRepository.DeleteLiabilityById(id);
+            if (comment.Id != 0)
+            {
+                var updateCommentResponse = this.UpdateComment(comment);
+
+                if (updateCommentResponse.IsExecuted)
+                {
+                    return new CreateResponse(updateCommentResponse.IsExecuted, updateCommentResponse.Message);
+                }
+
+                return new CreateResponse(updateCommentResponse.IsExecuted, updateCommentResponse.Message);
+            }
+
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            comment.ContractId = contractId;
+
+            return this._cmsDatabase.ContractRepository.CreateComment(comment);
         }
         public CreateResponse CreateClaim(Claim claim, string userToken)
         {
@@ -168,62 +181,6 @@
 
             return new CreateResponse(false, liabilityResponse.Message);
         }
-
-        public ReadResponse<List<LiabilityType>> ReadLiabilityType()
-        {
-            return this._cmsDatabase.ContractRepository.ReadLiabilityType();
-        }
-
-        public ReadResponse<List<Contractor>> ReadContractor(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken);
-
-            return this._cmsDatabase.ContractRepository.ReadContractor(contractId.Data);
-        }
-
-        public UpdateResponse UpdateContractor(Contractor contractor)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateContractor(contractor);
-        }
-
-        public UpdateResponse UpdateAddress(Address address)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateAddress(address);
-        }
-
-        
-
-        public ReadResponse<List<Liability>> ReadLiability(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadLiability(contractId);
-        }
-
-        public UpdateResponse UpdateClaim(Claim claim)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateClaim(claim);
-        }
-
-        public ReadResponse<List<Claim>> ReadClaim(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadClaim(contractId);
-        }
-
-        public ReadResponse<List<DepartmentType>> ReadAllDepartmentType()
-        {
-            return this._cmsDatabase.ContractRepository.ReadDepartmentType();
-        }
-
-        public ReadResponse<List<Department>> ReadDepartment(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadDepartment(contractId);
-        }
-
         public CreateResponse CreateDepartment(List<Department> departments, string userToken)
         {
             var idCollection = new List<int>();
@@ -244,12 +201,6 @@
 
             return new CreateResponse(false, "Departments cant be created!");
         }
-
-        public ReadResponse<List<FineType>> ReadFineType()
-        {
-            return this._cmsDatabase.ContractRepository.ReadFineType();
-        }
-
         public CreateResponse CreateFine(Fine fine, string userToken)
         {
             if (fine.Id != 0)
@@ -270,36 +221,6 @@
 
             return this._cmsDatabase.ContractRepository.CreateFine(fine);
         }
-
-        public ReadResponse<List<Fine>> ReadFine(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadFine(contractId);
-        }
-
-        public UpdateResponse UpdateFine(Fine fine)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateFine(fine);
-        }
-
-        public UpdateResponse UpdateCategory(Category category)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateCategory(category);
-        }
-
-        public ReadResponse<List<CategoryType>> ReadCategoryType()
-        {
-            return this._cmsDatabase.ContractRepository.ReadCategoryType();
-        }
-
-        public ReadResponse<List<Category>> ReadCategory(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadCategory(contractId);
-        }
-
         public CreateResponse CreateCategory(Category category, string userToken)
         {
             if (category.Id != 0)
@@ -320,24 +241,6 @@
 
             return this._cmsDatabase.ContractRepository.CreateCategory(category);
         }
-
-        public ReadResponse<List<DutyType>> ReadDutyType()
-        {
-            return this._cmsDatabase.ContractRepository.ReadDutyType();
-        }
-
-        public ReadResponse<List<Duty>> ReadDuty(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadDuty(contractId);
-        }
-
-        public UpdateResponse UpdateDuty(Duty duty)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateDuty(duty);
-        }
-
         public CreateResponse CreateDuty(Duty duty, string userToken)
         {
             if (duty.Id != 0)
@@ -358,78 +261,6 @@
 
             return this._cmsDatabase.ContractRepository.CreateDuty(duty);
         }
-
-        public ReadResponse<List<NotificationType>> ReadNotificationType()
-        {
-            return this._cmsDatabase.ContractRepository.ReadNotificationType();
-        }
-
-        public ReadResponse<List<Notification>> ReadNotification(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadNotification(contractId);
-        }
-
-        public UpdateResponse UpdateNotification(Notification notification)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateNotification(notification);
-        }
-
-        public CreateResponse CreateNotification(Notification notification, string userToken)
-        {
-            if (notification.Id != 0)
-            {
-                var updateNotificationResponse = this.UpdateNotification(notification);
-
-                if (updateNotificationResponse.IsExecuted)
-                {
-                    return new CreateResponse(updateNotificationResponse.IsExecuted, updateNotificationResponse.Message);
-                }
-
-                return new CreateResponse(updateNotificationResponse.IsExecuted, updateNotificationResponse.Message);
-            }
-
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            notification.ContractId = contractId;
-
-            return this._cmsDatabase.ContractRepository.CreateNotification(notification);
-        }
-
-        public CreateResponse CreateComment(Comment comment, string userToken)
-        {
-            if (comment.Id != 0)
-            {
-                var updateCommentResponse = this.UpdateComment(comment);
-
-                if (updateCommentResponse.IsExecuted)
-                {
-                    return new CreateResponse(updateCommentResponse.IsExecuted, updateCommentResponse.Message);
-                }
-
-                return new CreateResponse(updateCommentResponse.IsExecuted, updateCommentResponse.Message);
-            }
-
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            comment.ContractId = contractId;
-
-            return this._cmsDatabase.ContractRepository.CreateComment(comment);
-        }
-
-        public UpdateResponse UpdateComment(Comment comment)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateComment(comment);
-        }
-
-        public ReadResponse<List<Comment>> ReadComment(string userToken)
-        {
-            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
-
-            return this._cmsDatabase.ContractRepository.ReadComment(contractId);
-        }
-
         public CreateResponse CreateSign(Sign sign, string userToken)
         {
             if (sign.Id != 0)
@@ -451,21 +282,206 @@
             return this._cmsDatabase.ContractRepository.CreateSign(sign);
         }
 
-        public UpdateResponse UpdateSign(Sign sign)
-        {
-            return this._cmsDatabase.ContractRepository.UpdateSign(sign);
-        }
 
+
+        /// <summary>
+        /// Read
+        /// </summary>
+        /// <param name="userToken"></param>
+        /// <returns></returns>
+        public ReadResponse<List<ContractType>> ReadAllContractType()
+        {
+            return this._cmsDatabase.ContractRepository.ReadContractType();
+        }
+        public ReadResponse<List<ContractStatus>> ReadAllContractStatus()
+        {
+            return this._cmsDatabase.ContractRepository.ReadContractStatusType();
+        }
+        public ReadResponse<Info> ReadInfoByUserToken(string userToken)
+        {
+            return this._cmsDatabase.ContractRepository.ReadInfoByUserToken(userToken);
+        }
+        public ReadResponse<List<LiabilityType>> ReadLiabilityType()
+        {
+            return this._cmsDatabase.ContractRepository.ReadLiabilityType();
+        }
+        public ReadResponse<List<Contractor>> ReadContractor(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken);
+
+            return this._cmsDatabase.ContractRepository.ReadContractor(contractId.Data);
+        }
+        public ReadResponse<List<Claim>> ReadClaim(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadClaim(contractId);
+        }
+        public ReadResponse<List<DepartmentType>> ReadAllDepartmentType()
+        {
+            return this._cmsDatabase.ContractRepository.ReadDepartmentType();
+        }
+        public ReadResponse<List<Department>> ReadDepartment(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadDepartment(contractId);
+        }
+        public ReadResponse<List<Fine>> ReadFine(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadFine(contractId);
+        }
+        public ReadResponse<List<CategoryType>> ReadCategoryType()
+        {
+            return this._cmsDatabase.ContractRepository.ReadCategoryType();
+        }
+        public ReadResponse<List<Category>> ReadCategory(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadCategory(contractId);
+        }
+        public ReadResponse<List<DutyType>> ReadDutyType()
+        {
+            return this._cmsDatabase.ContractRepository.ReadDutyType();
+        }
+        public ReadResponse<List<Duty>> ReadDuty(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadDuty(contractId);
+        }
+        public ReadResponse<List<NotificationType>> ReadNotificationType()
+        {
+            return this._cmsDatabase.ContractRepository.ReadNotificationType();
+        }
+        public ReadResponse<List<Notification>> ReadNotification(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadNotification(contractId);
+        }
         public ReadResponse<List<Sign>> ReadSign(string userToken)
         {
             var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
 
             return this._cmsDatabase.ContractRepository.ReadSign(contractId);
         }
-
         public ReadResponse<bool> IsContractActive(string userToken)
         {
             return this._cmsDatabase.ContractRepository.IsContractActive(userToken);
+        }
+        public ReadResponse<List<Liability>> ReadLiability(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadLiability(contractId);
+        }
+        public ReadResponse<List<Comment>> ReadComment(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            return this._cmsDatabase.ContractRepository.ReadComment(contractId);
+        }
+        public ReadResponse<List<FineType>> ReadFineType()
+        {
+            return this._cmsDatabase.ContractRepository.ReadFineType();
+        }
+
+
+
+        /// <summary>
+        /// Update
+        /// </summary>
+        /// <returns></returns>
+        public UpdateResponse UpdateContractStatus(string userToken)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateContractStatus(userToken);
+        }
+        public UpdateResponse UpdateContractor(Contractor contractor)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateContractor(contractor);
+        }
+        public UpdateResponse UpdateAddress(Address address)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateAddress(address);
+        }
+        public UpdateResponse UpdateFine(Fine fine)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateFine(fine);
+        }
+        public UpdateResponse UpdateCategory(Category category)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateCategory(category);
+        }
+        public UpdateResponse UpdateLiability(Liability liability)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateLiability(liability);
+        }
+        public UpdateResponse UpdateSign(Sign sign)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateSign(sign);
+        }
+        public UpdateResponse UpdateClaim(Claim claim)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateClaim(claim);
+        }
+        public UpdateResponse UpdateNotification(Notification notification)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateNotification(notification);
+        }
+        public UpdateResponse UpdateComment(Comment comment)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateComment(comment);
+        }
+        public UpdateResponse UpdateDuty(Duty duty)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateDuty(duty);
+        }
+
+
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        /// <returns></returns>
+        public DeleteResponse DeleteLiability(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteLiabilityById(id);
+        }
+        public DeleteResponse DeleteClaim(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteClaimById(id);
+        }
+        public DeleteResponse DeleteDepartment(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteDepartmentById(id);
+        }
+        public DeleteResponse DeleteCategory(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteCategoryById(id);
+        }
+        public DeleteResponse DeleteFine(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteFineById(id);
+        }
+        public DeleteResponse DeleteDuty(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteDutyById(id);
+        }
+        public DeleteResponse DeleteNotification(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteNotificationById(id);
+        }
+        public DeleteResponse DeleteComment(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteCommentById(id);
+        }
+        public DeleteResponse DeleteSign(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteSignById(id);
         }
     }
 }
