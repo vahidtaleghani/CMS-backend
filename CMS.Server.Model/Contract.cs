@@ -3,13 +3,22 @@
     using System;
     public class Contract
     {
-        public Contract(string usertoken, string status)
+        //public Contract(string usertoken, string status)
+        //{
+        //    this.Usertoken = usertoken;
+        //    this.Status = status;
+        //}
+
+        public Contract(int id, string status)
         {
-            this.Usertoken = usertoken;
+            this.Id = id;
             this.Status = status;
         }
 
         public string Usertoken { get; }
+
+        public int Id { get; }
+
         public string Status { get; }
 
 

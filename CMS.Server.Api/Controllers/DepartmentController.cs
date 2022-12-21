@@ -20,25 +20,34 @@ namespace CMS.Server.Api
             this._cmsServerOperationHandler = new CMSServerOperationsHandler();
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<Department>> Get()
-        {
-            var DepartmentStatus = this._cmsServerOperationHandler.ReadDepartment("farasat-user-token");
 
-            if (DepartmentStatus.IsExecuted)
+        [HttpGet("{id}")]
+        public ActionResult<IEnumerable<Info>> Get(int id)
+        {
+            var activeIds = this._cmsServerOperationHandler.ReadAllActiveId().Data;
+
+            if (activeIds.Contains(id))
             {
-                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(DepartmentStatus));
+                var DepartmentStatus = this._cmsServerOperationHandler.ReadDepartment(id);
+
+                if (DepartmentStatus.IsExecuted)
+                {
+                    return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(DepartmentStatus));
+                }
+
+                return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(DepartmentStatus.Message)));
             }
 
-            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(DepartmentStatus.Message)));
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse("Error")));
         }
+       
 
         [HttpPost]
         public ActionResult Post(object requestBody)
         {
             var departments = JsonConvert.DeserializeObject<List<Department>>(requestBody.ToString());
 
-            var response = this._cmsServerOperationHandler.CreateDepartment(departments, "farasat-user-token");
+            var response = this._cmsServerOperationHandler.CreateDepartment(departments);
 
             if (response.IsExecuted)
             {

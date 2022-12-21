@@ -2,17 +2,17 @@
 {
 	public class Department
 	{
-		public Department(int id, int contactId, int departmentTypeId,  string personName)
+		public Department(int id, int contractId, int departmentTypeId,  string personName)
 		{
+            ContractId = contractId;
 			Id = id;
-            ContactId = contactId;
             DepartmentTypeId = departmentTypeId;
             PersonName = personName;
         }
 
 		public int Id { get; set; }
 		public int DepartmentTypeId { get; set; }
-		public int ContactId { get; set; }
+		public int ContractId { get; set; }
         public string PersonName { get; set; }
     }
 }

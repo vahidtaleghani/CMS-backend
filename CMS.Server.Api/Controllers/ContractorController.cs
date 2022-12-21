@@ -26,7 +26,7 @@ namespace CMS.Server.Api
         {
             var contractor = JsonConvert.DeserializeObject<Contractor>(requestBody.ToString());
 
-            var response = this._cmsServerOperationHandler.CreateContractor(contractor, "farasat-user-token");
+            var response = this._cmsServerOperationHandler.CreateContractor(contractor);
 
             if (response.IsExecuted)
             {
@@ -36,18 +36,25 @@ namespace CMS.Server.Api
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
 
-        [HttpGet]
-        public ActionResult Get()
+        [HttpGet("{id}")]
+        public ActionResult<IEnumerable<Info>> Get(int id)
         {
-            var response = this._cmsServerOperationHandler.ReadContractor("farasat-user-token");
+            var activeIds = this._cmsServerOperationHandler.ReadAllActiveId().Data;
 
-            if (response.IsExecuted)
+            if (activeIds.Contains(id))
             {
-                var serializedData = JsonConvert.SerializeObject(response.Data);
-                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+                var response = this._cmsServerOperationHandler.ReadContractor(id);
+
+                if (response.IsExecuted)
+                {
+                    var serializedData = JsonConvert.SerializeObject(response.Data);
+                    return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+                }
+
+                return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
             }
 
-            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse("Error")));
         }
     }
 }

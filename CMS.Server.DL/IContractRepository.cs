@@ -9,9 +9,14 @@
         public CreateResponse CreateContract(Contract contract);
         public ReadResponse<bool> IsContractActive(string userToken);
 
+        public ReadResponse<bool> IsContractActive(int id);
+
         public UpdateResponse UpdateContractStatus(string userToken);
 
+        public UpdateResponse UpdateContractStatus(int id);
+
         public CreateResponse CreateInfo(Info info);
+
         public CreateResponse CreateAddress(Address address);
         public CreateResponse CreateContractor(Contractor contractor);
         public CreateResponse CreateLiability(Liability liability);
@@ -24,6 +29,7 @@
         public ReadResponse<List<ContractStatus>> ReadContractStatusType();
         public ReadResponse<List<ContractType>> ReadContractType();
         public ReadResponse<List<Info>> ReadInfo();
+        public ReadResponse<List<int>> ReadAllActiveId();
         public ReadResponse<Info> ReadLastInfo();
         public ReadResponse<List<Address>> ReadAddress();
         public ReadResponse<List<Contractor>> ReadContractor(int id);
@@ -38,7 +44,7 @@
         public ReadResponse<int> GetLastId(string tableName);
         public ReadResponse<bool> HasInfoAlreadyCreated(int contractId);
         public ReadResponse<int> ReadContractIdByUsertoken(string userToken);
-        public ReadResponse<Info> ReadInfoByUserToken(string userToken);
+        public ReadResponse<Info> ReadInfoById(int id);
         public UpdateResponse UpdateInfo(Info info);
         public UpdateResponse UpdateAddress(Address address);
         public UpdateResponse UpdateContractor(Contractor contractor);
@@ -63,5 +69,7 @@
         public CreateResponse CreateSign(Sign sign);
         public UpdateResponse UpdateSign(Sign sign);
         public ReadResponse<List<Sign>> ReadSign(int id);
+
+        public ReadResponse<bool> Exists(int id, string table);
     }
 }

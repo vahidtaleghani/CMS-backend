@@ -29,17 +29,16 @@
                     connection.Open();
                     IDbCommand cmd = connection.CreateCommand();
                     cmd.CommandText = @"insert into 
-                            contract(usertoken, status)
-                            values(@Usertoken, @Status)";
+                            contract(status)
+                            values(@Status)";
 
-                    cmd.Parameters.Add(new NpgsqlParameter("@Usertoken", contract.Usertoken));
-                    cmd.Parameters.Add(new NpgsqlParameter("@Status", contract.Status));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "active"));
 
 
                     cmd.ExecuteNonQuery();
                     cmd.Dispose();
 
-                    return new CreateResponse(true, "New contract has been added successfully.");
+                    return new CreateResponse(true, Convert.ToString(this.GetLastId("contract").Data));
                 }
                 catch (Exception)
                 {
@@ -117,6 +116,41 @@
                     cmd.CommandText = "Select * from info where contractid = @ContractId";
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.Add(new NpgsqlParameter("@ContractId", contractId));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        isFound = true;
+                    }
+                    cmd.Dispose();
+
+                    return new ReadResponse<bool>(true, "Id is fetched successfully", isFound);
+                }
+                catch (Exception ex)
+                {
+                    return new ReadResponse<bool>(false, "Id cant be fetched", isFound);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+
+        public ReadResponse<bool> Exists(int id, string table)
+        {
+            bool isFound = false;
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = $"Select * from {table} where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", id));
                     NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
 
                     while (reader.Read())
@@ -370,11 +404,11 @@
                     connection.Open();
                     IDbCommand cmd = connection.CreateCommand();
                     cmd.CommandText = @"insert into 
-                            department(contractid, departmenttypeid , personName)
+                            department(contractid, departmenttypeid , personname)
                             values(@ContractId, @DepartmentTypeId, @PersonName)";
 
 
-                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", department.ContactId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", department.ContractId));
                     cmd.Parameters.Add(new NpgsqlParameter("@DepartmentTypeId", department.DepartmentTypeId));
                     cmd.Parameters.Add(new NpgsqlParameter("@PersonName", department.PersonName));
 
@@ -465,13 +499,11 @@
                 }
             }
         }
-        public ReadResponse<Info> ReadInfoByUserToken(string userToken)
+        public ReadResponse<Info> ReadInfoById(int id)
         {
-            var contractId = this.ReadContractIdByUsertoken(userToken).Data;
-
-            if (contractId != 0)
+            if (id != 0)
             {
-                var info = this.ReadInfo().Data.Find(x => x.ContractId == contractId);
+                var info = this.ReadInfo().Data.Find(x => x.ContractId == id);
 
                 if (info != null)
                 {
@@ -1939,7 +1971,7 @@
                     IDbCommand cmd = connection.CreateCommand();
 
                     cmd.Connection = connection;
-                    cmd.CommandText = "Select status from contract where usertoken = @Usertoken AND status = @Status";
+                    cmd.CommandText = "Select id, status from contract where usertoken = @Usertoken AND status = @Status";
                     cmd.CommandType = CommandType.Text;
                     cmd.Parameters.Add(new NpgsqlParameter("@UserToken", userToken));
                     cmd.Parameters.Add(new NpgsqlParameter("@Status", "active"));
@@ -1971,6 +2003,80 @@
             }
         }
 
+
+        public ReadResponse<bool> IsContractActive(int id)
+        {
+            bool isActive = false;
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from contract where id = @Id AND status = @Status";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", id));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "active"));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        isActive = true;
+                    }
+
+                    cmd.Dispose();
+
+                    if (isActive)
+                    {
+                        return new(true, "Contract is active", true);
+                    }
+
+                    return new(true, "Contract is already inactive", false);
+
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Comments cant be fetched.", false);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+
+        public UpdateResponse UpdateContractStatus(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update contract set \"status\"=@Status WHERE \"id\"=@Id;";
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "inactive"));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", id));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some reason status cant be changed.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "status has been changed successfully.");
+            }
+        }
+
         public UpdateResponse UpdateContractStatus(string userToken)
         {
             using (IDbConnection connection = this.Connect)
@@ -1997,6 +2103,45 @@
                 }
 
                 return new UpdateResponse(true, "status has been changed successfully.");
+            }
+        }
+
+        public ReadResponse<List<int>> ReadAllActiveId()
+        {
+            var activeIds = new List<int>();
+                    
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from contract where status = @Status";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@Status", "active"));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int id = Convert.ToInt32(reader[0].ToString());
+
+                        activeIds.Add(id);
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Active IDs are fetched successfully", activeIds);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Error", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
             }
         }
     }

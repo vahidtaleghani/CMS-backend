@@ -25,31 +25,50 @@ namespace CMS.Server.Api
             throw new System.NotImplementedException();
         }
 
-        public override ActionResult<IEnumerable<Info>> Get()
+        [HttpGet("{id}")]
+        public  ActionResult<IEnumerable<Info>> Get(int id)
         {
-            var response = this._cmsServerOperationHandler.ReadInfoByUserToken("farasat-user-token");
+            var activeIds = this._cmsServerOperationHandler.ReadAllActiveId().Data;
 
-            if (response.IsExecuted)
+            if (activeIds.Contains(id))
             {
-                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+                var response = this._cmsServerOperationHandler.ReadInfoById(id);
+
+                if (response.IsExecuted)
+                {
+                    return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+                }
+
+                return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
             }
 
-            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse("Error")));
         }
 
+        public override ActionResult<IEnumerable<Info>> Get()
+        {
+            throw new System.NotImplementedException();
+        }
 
         public override ActionResult Post(object requestBody)
         {
             var info = JsonConvert.DeserializeObject<Info>(requestBody.ToString());
 
-            var response = this._cmsServerOperationHandler.CreateInfo(info, "farasat-user-token");
+            var activeIds = this._cmsServerOperationHandler.ReadAllActiveId().Data;
 
-            if (response.IsExecuted)
+            if (activeIds.Contains(info.ContractId))
             {
-                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+                var response = this._cmsServerOperationHandler.CreateInfo(info);
+
+                if (response.IsExecuted)
+                {
+                    return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+                }
+
+                return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
             }
 
-            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse("Error")));
         }
 
         public override Task<ActionResult> Put(string requestBody)

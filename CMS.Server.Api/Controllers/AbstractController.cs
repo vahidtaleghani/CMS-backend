@@ -12,6 +12,9 @@ namespace CMS.Server.Api
         [HttpGet]
         public abstract ActionResult<IEnumerable<T>> Get();
 
+        //[HttpGet]
+        //public abstract ActionResult<IEnumerable<T>> Get(int id);
+
         [HttpPost]
         public abstract ActionResult Post(object requestBody);
 

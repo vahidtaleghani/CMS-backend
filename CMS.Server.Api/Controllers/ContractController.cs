@@ -7,6 +7,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
@@ -21,11 +22,12 @@
             this._cmsServerOperationHandler = new CMSServerOperationsHandler();
         }
 
-
-        [HttpGet]
-        public ActionResult Get()
+        [HttpGet("{id}")]
+        public ActionResult Get(int id)
         {
-            var response = this._cmsServerOperationHandler.IsContractActive("farasat-user-token");
+            //var response = this._cmsServerOperationHandler.IsContractActive("farasat-user-token");
+
+            var response = this._cmsServerOperationHandler.IsContractActive(id);
 
             if (response.IsExecuted)
             {
@@ -38,7 +40,15 @@
         [HttpPost]
         public ActionResult Post(object requestBody)
         {
-            var contract = JsonConvert.DeserializeObject<Contract>(requestBody.ToString());
+            Contract contract = null;
+            var body = JsonConvert.DeserializeObject<dynamic>(requestBody.ToString());
+
+           var value = body["id"].Value;
+
+            if (value != null)
+            {
+                contract = JsonConvert.DeserializeObject<Contract>(requestBody.ToString());
+            }
 
             var response = this._cmsServerOperationHandler.CreateContract(contract);
 

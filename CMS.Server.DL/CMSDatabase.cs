@@ -19,7 +19,7 @@ namespace CMS.Server.DL
         public CMSDatabase()
         {
             IConfiguration config = new ConfigurationBuilder()
-          .AddJsonFile(@"C:\Users\bahar\Desktop\documentation\sourcecode\CMS-backend\CMS.Server.Api\appsettings.json", false, true)
+          .AddJsonFile(@"C:\Users\Farasat\source\repos\CMS-backend\CMS.Server.Api\appsettings.json", false, true)
         .Build();
 
             var section = config.GetSection(nameof(DBConfigData));
