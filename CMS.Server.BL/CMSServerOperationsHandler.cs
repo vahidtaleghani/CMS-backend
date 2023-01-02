@@ -221,6 +221,7 @@
 
             return this._cmsDatabase.ContractRepository.CreateFine(fine);
         }
+
         public CreateResponse CreateCategory(Category category, string userToken)
         {
             if (category.Id != 0)
@@ -281,7 +282,26 @@
 
             return this._cmsDatabase.ContractRepository.CreateSign(sign);
         }
+        public CreateResponse CreateFile(DataFile file, string userToken)
+        {
+            //if (file.FileId != 0)
+            //{
+            //    var updateFileResponse = this.UpdateFile(file);
 
+            //    if (updateFileResponse.IsExecuted)
+            //    {
+            //        return new CreateResponse(updateFileResponse.IsExecuted, updateFileResponse.Message);
+            //    }
+
+            //    return new CreateResponse(updateFileResponse.IsExecuted, updateFileResponse.Message);
+            //}
+
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
+
+            file.ContractId = contractId;
+
+            return this._cmsDatabase.ContractRepository.CreateFile(file);
+        }
 
 
         /// <summary>
@@ -333,6 +353,7 @@
 
             return this._cmsDatabase.ContractRepository.ReadFine(contractId);
         }
+
         public ReadResponse<List<CategoryType>> ReadCategoryType()
         {
             return this._cmsDatabase.ContractRepository.ReadCategoryType();
@@ -389,7 +410,12 @@
         {
             return this._cmsDatabase.ContractRepository.ReadFineType();
         }
+        public ReadResponse<List<File>> ReadFile(string userToken)
+        {
+            var contractId = this._cmsDatabase.ContractRepository.ReadContractIdByUsertoken(userToken).Data;
 
+            return this._cmsDatabase.ContractRepository.ReadFile(contractId);
+        }
 
 
         /// <summary>
@@ -440,7 +466,10 @@
         {
             return this._cmsDatabase.ContractRepository.UpdateDuty(duty);
         }
-
+        public UpdateResponse UpdateFile(File file)
+        {
+            return this._cmsDatabase.ContractRepository.UpdateFile(file);
+        }
 
 
         /// <summary>
@@ -482,6 +511,10 @@
         public DeleteResponse DeleteSign(int id)
         {
             return this._cmsDatabase.ContractRepository.DeleteSignById(id);
+        }
+        public DeleteResponse DeleteFile(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteFileById(id);
         }
     }
 }

@@ -1,9 +1,12 @@
 ﻿namespace CMS.Server.Model
 {
+    using Microsoft.AspNetCore.Http;
     using System;
-    public class File
+    using System.Collections.Generic;
+
+    public class DataFile
     {
-        public File(int fileId, string fileName, DateTime date, string comment, bool isFinal, int contractId)
+        public DataFile(int fileId, string fileName, DateTime date, string comment, bool isFinal, int contractId, IFormFile data)
         {
             FileId = fileId;
             FileName = fileName;
@@ -11,6 +14,7 @@
             Comment = comment;
             IsFinal = isFinal;
             ContractId = contractId;
+            Data = data;
         }
 
         public int FileId { get; set; }
@@ -19,5 +23,6 @@
         public string Comment { get; set; }
         public bool IsFinal { get; set; }
         public int ContractId { get; set; }
+        public IFormFile Data { get; set; }
     }
 }

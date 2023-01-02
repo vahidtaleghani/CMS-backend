@@ -25,6 +25,7 @@
         public CreateResponse CreateNotification(Notification notification);
         public CreateResponse CreateComment(Comment comment);
         public CreateResponse CreateSign(Sign sign);
+        public CreateResponse CreateFile(DataFile file);
 
 
         /// <summary>
@@ -59,7 +60,7 @@
         public ReadResponse<List<Notification>> ReadNotification(int id);
         public ReadResponse<List<Comment>> ReadComment(int id);
         public ReadResponse<List<Sign>> ReadSign(int id);
-
+        public ReadResponse<List<File>> ReadFile(int id);
 
         /// <summary>
         /// Update
@@ -78,7 +79,7 @@
         public UpdateResponse UpdateComment(Comment comment);
         public UpdateResponse UpdateNotification(Notification notification);
         public UpdateResponse UpdateSign(Sign sign);
-
+        public UpdateResponse UpdateFile(File file);
 
         /// <summary>
         /// Delete
@@ -96,5 +97,6 @@
         public DeleteResponse DeleteNotificationById(int id);
         public DeleteResponse DeleteCommentById(int id);
         public DeleteResponse DeleteSignById(int id);
+        public DeleteResponse DeleteFileById(int id);
     }
 }

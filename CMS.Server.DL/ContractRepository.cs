@@ -447,14 +447,14 @@
                 }
                 catch (Exception)
                 {
-                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
+                    return new CreateResponse(false, "Due to some error Comment data cant be added.");
                 }
                 finally
                 {
                     connection.Close();
                 }
 
-                return new CreateResponse(true, "Notification data has been added successfully.");
+                return new CreateResponse(true, "Comment data has been added successfully.");
 
             }
         }
@@ -483,18 +483,51 @@
                 }
                 catch (Exception)
                 {
-                    return new CreateResponse(false, "Due to some error Notification data cant be added.");
+                    return new CreateResponse(false, "Due to some error Sign data cant be added.");
                 }
                 finally
                 {
                     connection.Close();
                 }
 
-                return new CreateResponse(true, "Notification data has been added successfully.");
+                return new CreateResponse(true, "Sign data has been added successfully.");
 
             }
         }
+        public CreateResponse CreateFile(DataFile file)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = @"insert into 
+                            file(filename, date, comment, isfinal, contractid, data)
+                            values(@FileName, @Date , @Comment , @IsFinal , @ContractId , @Data)";
 
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractId", file.ContractId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@FileName", file.FileName));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Date", file.Date));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", file.Comment));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsFinal", file.IsFinal));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Data", file.Data));
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new CreateResponse(false, "Due to some error File data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new CreateResponse(true, "File data has been added successfully.");
+            }
+        }
 
         /// <summary>
         /// Read
@@ -1553,7 +1586,48 @@
                 }
             }
         }
+        public ReadResponse<List<File>> ReadFile(int id)
+        {
+            List<File> files = new List<File>();
 
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from file where contractid = @ContractId";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", id));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int file_id = Convert.ToInt32(reader[0].ToString());
+                        string file_name = reader[1].ToString();
+                        DateTime date = Convert.ToDateTime(reader[2].ToString());
+                        string comment = reader[3].ToString();
+                        bool is_final = Convert.ToBoolean(reader[4].ToString());
+                        int contact_id = Convert.ToInt32(reader[5].ToString());
+
+                        files.Add(new File(file_id, file_name, date, comment, is_final, contact_id));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "File are fetched successfully", files);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "File are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
 
         /// <summary>
         /// Update
@@ -1949,6 +2023,38 @@
             }
         }
 
+        public UpdateResponse UpdateFile(File file)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.CommandText = "update file set \"filename\"=@FileName,\"comment\"=@Comment, \"isfinal\"=@IsFinal WHERE \"id\"=@Id;";
+
+                    cmd.Parameters.Add(new NpgsqlParameter("@FileName", file.FileName));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Comment", file.Comment));
+                    cmd.Parameters.Add(new NpgsqlParameter("@IsFinal", file.IsFinal));
+                    cmd.Parameters.Add(new NpgsqlParameter("@Id", file.FileId));
+
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new UpdateResponse(false, "Due to some error File data cant be added.");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+                return new UpdateResponse(true, "File data has been added successfully.");
+            }
+        }
+
         /// <summary>
         /// Delete
         /// </summary>
@@ -2239,6 +2345,33 @@
             }
 
             return new DeleteResponse(true, "sign is deleted successfully!");
+        }
+        public DeleteResponse DeleteFileById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM file WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "file cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "file is deleted successfully!");
         }
     }
 }
