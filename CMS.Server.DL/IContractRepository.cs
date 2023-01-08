@@ -29,7 +29,7 @@
         public ReadResponse<List<ContractStatus>> ReadContractStatusType();
         public ReadResponse<List<ContractType>> ReadContractType();
         public ReadResponse<List<Info>> ReadInfo();
-        public ReadResponse<List<int>> ReadAllActiveId();
+        public ReadResponse<List<int>> ReadAllId();
         public ReadResponse<Info> ReadLastInfo();
         public ReadResponse<List<Address>> ReadAddress();
         public ReadResponse<List<Contractor>> ReadContractor(int id);
@@ -71,5 +71,9 @@
         public ReadResponse<List<Sign>> ReadSign(int id);
 
         public ReadResponse<bool> Exists(int id, string table);
+
+        public ReadResponse<List<Contract>> ReadAllContract();
+
+        public ReadResponse<List<Contract>> ReadLike(string text);
     }
 }

@@ -22,11 +22,9 @@
             this._cmsServerOperationHandler = new CMSServerOperationsHandler();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public ActionResult Get(int id)
         {
-            //var response = this._cmsServerOperationHandler.IsContractActive("farasat-user-token");
-
             var response = this._cmsServerOperationHandler.IsContractActive(id);
 
             if (response.IsExecuted)
@@ -36,6 +34,33 @@
 
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
+
+        [HttpGet]
+        public ActionResult GetAll(int id)
+        {
+            var response = this._cmsServerOperationHandler.ReadAllContract();
+
+            if (response.IsExecuted)
+            {
+                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+            }
+
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+        }
+
+        [HttpGet("{text}")]
+        public ActionResult GetLike(string text)
+        {
+            var response = this._cmsServerOperationHandler.ReadLike(text);
+
+            if (response.IsExecuted)
+            {
+                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+            }
+
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+        }
+
 
         [HttpPost]
         public ActionResult Post(object requestBody)

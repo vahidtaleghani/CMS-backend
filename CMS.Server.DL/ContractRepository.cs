@@ -2106,7 +2106,7 @@
             }
         }
 
-        public ReadResponse<List<int>> ReadAllActiveId()
+        public ReadResponse<List<int>> ReadAllId()
         {
             var activeIds = new List<int>();
                     
@@ -2143,6 +2143,131 @@
                     connection.Close();
                 }
             }
+        }
+
+        public ReadResponse<List<Contract>> ReadAllContract()
+        {
+            var contracts = new List<Contract>();
+
+
+            string query = "Select " +
+                "                       c.id, " +
+                "                       ct.type, " +
+                "                       co.companyname, " +
+                "                       co.person, " +
+                "                       cs.status" +
+                "          from contract c" +
+                "                   join  info i on i.contractid = c.id" +
+                "                   join contracttype ct on ct.id = i.contracttypeid" +
+                "                   join contractor co on co.contractid = c.id" +
+                "                   join contractstatus cs on cs.id = i.contractstatusid";
+               
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = $"{query}";
+                    cmd.CommandType = CommandType.Text;
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int id = Convert.ToInt32(reader[0].ToString());
+                        var contractType = reader[1].ToString();
+                        var companyName = reader[2].ToString();
+                        var person = reader[3].ToString();
+                        var status = reader[4].ToString();
+
+                        var contract = new Contract(id, status, null, companyName, person, null);
+
+                        contracts.Add(contract);
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Contracts have been fetched successfully", contracts);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Error", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            throw new NotImplementedException();
+        }
+
+
+        public ReadResponse<List<Contract>> ReadLike(string text)
+        {
+            var contracts = new List<Contract>();
+
+            string queryText = $"'%{text}%'";
+
+            string query = "Select " +
+                "                       c.id, " +
+                "                       ct.type, " +
+                "                       co.companyname, " +
+                "                       co.person, " +
+                "                       cs.status" +
+                "          from contract c" +
+                "                   join  info i on i.contractid = c.id" +
+                "                   join contracttype ct on ct.id = i.contracttypeid" +
+                "                   join contractor co on co.contractid = c.id" +
+                "                   join contractstatus cs on cs.id = i.contractstatusid" +
+                "          where " +
+               $"                   ct.type like {queryText} or" +
+               $"                   co.companyname like {queryText} or" +
+               $"                   co.person like {queryText} or" +
+               $"                   cs.status like {queryText} or" +
+               $"                   ct.type like {queryText}";
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = $"{query}";
+                    cmd.CommandType = CommandType.Text;
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int id = Convert.ToInt32(reader[0].ToString());
+                        var contractType = reader[1].ToString();
+                        var companyName = reader[2].ToString();
+                        var person = reader[3].ToString();
+                        var status = reader[4].ToString();
+
+                        var contract = new Contract(id, status, null, companyName, person, null);
+
+                        contracts.Add(contract);
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Contracts have been fetched successfully", contracts);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Error", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            throw new NotImplementedException();
         }
     }
 }

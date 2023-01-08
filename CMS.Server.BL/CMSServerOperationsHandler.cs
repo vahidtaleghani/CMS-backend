@@ -78,7 +78,7 @@
 
         public CreateResponse CreateContractor(Contractor contractor)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(contractor.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(contractor.ContractId))
             {
                 if (contractor.Id != 0)
                 {
@@ -120,7 +120,7 @@
 
         public CreateResponse CreateLiability(Liability liability)
          {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(liability.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(liability.ContractId))
             {
                 if (liability.Id != 0)
                 {
@@ -151,7 +151,7 @@
 
         public CreateResponse CreateClaim(Claim claim)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(claim.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(claim.ContractId))
             {
                 if (claim.Id != 0)
                 {
@@ -236,7 +236,7 @@
         {
             var contractId = departments[0].ContractId;
 
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(contractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(contractId))
             {
                 var idCollection = new List<int>();
 
@@ -264,7 +264,7 @@
 
         public CreateResponse CreateFine(Fine fine)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(fine.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(fine.ContractId))
             {
                 if (fine.Id != 0)
                 {
@@ -311,7 +311,7 @@
 
         public CreateResponse CreateCategory(Category category)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(category.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(category.ContractId))
             {
                 if (category.Id != 0)
                 {
@@ -348,7 +348,7 @@
 
         public CreateResponse CreateDuty(Duty duty)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(duty.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(duty.ContractId))
             {
                 if (duty.Id != 0)
                 {
@@ -385,7 +385,7 @@
 
         public CreateResponse CreateNotification(Notification notification)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(notification.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(notification.ContractId))
             {
                 if (notification.Id != 0)
                 {
@@ -407,7 +407,7 @@
 
         public CreateResponse CreateComment(Comment comment)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(comment.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(comment.ContractId))
             {
                 if (comment.Id != 0)
                 {
@@ -440,7 +440,7 @@
 
         public CreateResponse CreateSign(Sign sign)
         {
-            if (this._cmsDatabase.ContractRepository.ReadAllActiveId().Data.Contains(sign.ContractId))
+            if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(sign.ContractId))
             {
                 if (sign.Id != 0)
                 {
@@ -480,9 +480,19 @@
             return this._cmsDatabase.ContractRepository.IsContractActive(id);
         }
 
-        public ReadResponse<List<int>> ReadAllActiveId()
+        public ReadResponse<List<int>> ReadAllId()
         {
-            return this._cmsDatabase.ContractRepository.ReadAllActiveId();
+            return this._cmsDatabase.ContractRepository.ReadAllId();
+        }
+
+        public ReadResponse<List<Contract>> ReadAllContract() 
+        {
+            return this._cmsDatabase.ContractRepository.ReadAllContract();
+        }
+
+        public ReadResponse<List<Contract>> ReadLike(string text)
+        {
+            return this._cmsDatabase.ContractRepository.ReadLike(text);
         }
     }
 }

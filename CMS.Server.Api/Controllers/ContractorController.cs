@@ -39,7 +39,7 @@ namespace CMS.Server.Api
         [HttpGet("{id}")]
         public ActionResult<IEnumerable<Info>> Get(int id)
         {
-            var activeIds = this._cmsServerOperationHandler.ReadAllActiveId().Data;
+            var activeIds = this._cmsServerOperationHandler.ReadAllId().Data;
 
             if (activeIds.Contains(id))
             {
