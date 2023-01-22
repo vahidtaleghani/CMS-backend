@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
+<<<<<<< HEAD
 VisualStudioVersion = 17.0.32901.226
+=======
+VisualStudioVersion = 17.3.32929.385
+>>>>>>> 5158f050e533d041659a420ba6f682bdf10fea7f
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CMS.Server.BL", "CMS.Server.BL\CMS.Server.BL.csproj", "{F4C5C955-955F-40F0-A179-C71385DF7EC3}"
 EndProject

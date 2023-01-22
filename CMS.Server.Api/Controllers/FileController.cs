@@ -1,30 +1,33 @@
 namespace CMS.Server.Api
 {
     using CMS.Server.BL;
+    using CMS.Server.DL;
     using CMS.Server.Model;
     using CMS.Server.Model.ServerResponses;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
 
 
     [Route("api/[controller]")]
     [ApiController]
-    public class NotificationController : ControllerBase
+    public class FileController : ControllerBase
     {
         private readonly CMSServerOperationsHandler _cmsServerOperationHandler;
-        public NotificationController()
+        public FileController()
         {
             this._cmsServerOperationHandler = new CMSServerOperationsHandler();
         }
 
         [HttpPost]
-        public ActionResult Post(object requestBody)
+        public ActionResult Post([FromBody]object requestBody)
         {
-            var notification = JsonConvert.DeserializeObject<Notification>(requestBody.ToString());
+            //var request = Request.Form.Files;
+            var file = JsonConvert.DeserializeObject<DataFile>(requestBody.ToString());
 
-            var response = this._cmsServerOperationHandler.CreateNotification(notification);
+            var response = this._cmsServerOperationHandler.CreateFile(file, "farasat-user-token");
 
             if (response.IsExecuted)
             {
@@ -34,32 +37,23 @@ namespace CMS.Server.Api
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
 
-
-
-        [HttpGet("{id}")]
-        public ActionResult<IEnumerable<Info>> Get(int id)
+        [HttpGet]
+        public ActionResult<IEnumerable<File>> Get()
         {
-            var activeIds = this._cmsServerOperationHandler.ReadAllId().Data;
+            var response = this._cmsServerOperationHandler.ReadFile("farasat-user-token");
 
-            if (activeIds.Contains(id))
+            if (response.IsExecuted)
             {
-                var response = this._cmsServerOperationHandler.ReadNotification(id);
-
-                if (response.IsExecuted)
-                {
-                    return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
-                }
-
-                return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
             }
 
-            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse("Error")));
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
 
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var response = this._cmsServerOperationHandler.DeleteNotification(id);
+            var response = this._cmsServerOperationHandler.DeleteFile(id);
 
             if (response.IsExecuted)
             {

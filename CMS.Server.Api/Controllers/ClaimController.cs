@@ -36,6 +36,14 @@ namespace CMS.Server.Api
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
 
+<<<<<<< HEAD
+=======
+
+        [HttpGet]
+        public ActionResult Get()
+        {
+            var response = this._cmsServerOperationHandler.ReadClaim("farasat-user-token");
+>>>>>>> 5158f050e533d041659a420ba6f682bdf10fea7f
 
         [HttpGet("{id}")]
         public ActionResult<IEnumerable<Info>> Get(int id)
@@ -55,6 +63,19 @@ namespace CMS.Server.Api
             }
 
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse("Error")));
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult Delete(int id)
+        {
+            var response = this._cmsServerOperationHandler.DeleteClaim(id);
+
+            if (response.IsExecuted)
+            {
+                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+            }
+
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
     }
 }
