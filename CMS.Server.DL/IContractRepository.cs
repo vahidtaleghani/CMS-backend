@@ -33,6 +33,8 @@
         public ReadResponse<Info> ReadLastInfo();
         public ReadResponse<List<Address>> ReadAddress();
         public ReadResponse<List<Contractor>> ReadContractor(int id);
+
+        public ReadResponse<List<Contractor>> ReadAllContractor();
         public ReadResponse<List<LiabilityType>> ReadLiabilityType();
         public ReadResponse<List<Liability>> ReadLiability(int id);
         public ReadResponse<List<ClaimType>> ReadClaimType();
@@ -75,5 +77,16 @@
         public ReadResponse<List<Contract>> ReadAllContract();
 
         public ReadResponse<List<Contract>> ReadLike(string text);
+
+        public DeleteResponse DeleteLiabilityById(int id);
+        public DeleteResponse DeleteClaimById(int id);
+        public DeleteResponse DeleteDepartmentById(int id);
+        public DeleteResponse DeleteFineById(int id);
+        public DeleteResponse DeleteCategoryById(int id);
+        public DeleteResponse DeleteDutyById(int id);
+        public DeleteResponse DeleteNotificationById(int id);
+        public DeleteResponse DeleteCommentById(int id);
+        public DeleteResponse DeleteSignById(int id);
+        public DeleteResponse DeleteFileById(int id);
     }
 }

@@ -36,7 +36,7 @@
         }
 
         [HttpGet]
-        public ActionResult GetAll(int id)
+        public ActionResult GetAll()
         {
             var response = this._cmsServerOperationHandler.ReadAllContract();
 
@@ -50,7 +50,12 @@
 
         [HttpGet("{text}")]
         public ActionResult GetLike(string text)
-        {
+       {
+            if(text == "empty")
+            {
+                return this.GetAll();
+            }
+
             var response = this._cmsServerOperationHandler.ReadLike(text);
 
             if (response.IsExecuted)

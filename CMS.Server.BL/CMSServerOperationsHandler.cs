@@ -192,6 +192,11 @@
             return this._cmsDatabase.ContractRepository.ReadContractor(id);
         }
 
+        public ReadResponse<List<Contractor>> ReadAllContractor()
+        {
+            return this._cmsDatabase.ContractRepository.ReadAllContractor();
+        }
+
         public UpdateResponse UpdateContractor(Contractor contractor)
         {
             return this._cmsDatabase.ContractRepository.UpdateContractor(contractor);
@@ -493,6 +498,62 @@
         public ReadResponse<List<Contract>> ReadLike(string text)
         {
             return this._cmsDatabase.ContractRepository.ReadLike(text);
+        }
+
+        public CreateResponse CreateFile(DataFile file, string userToken)
+        {
+            return null;
+        }
+
+        public UpdateResponse UpdateFile(File file)
+        {
+            return null;
+            //return this._cmsDatabase.ContractRepository.UpdateFile(file);
+        }
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        /// <returns></returns>
+        public DeleteResponse DeleteLiability(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteLiabilityById(id);
+        }
+        public DeleteResponse DeleteClaim(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteClaimById(id);
+        }
+        public DeleteResponse DeleteDepartment(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteDepartmentById(id);
+        }
+        public DeleteResponse DeleteCategory(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteCategoryById(id);
+        }
+        public DeleteResponse DeleteFine(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteFineById(id);
+        }
+        public DeleteResponse DeleteDuty(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteDutyById(id);
+        }
+        public DeleteResponse DeleteNotification(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteNotificationById(id);
+        }
+        public DeleteResponse DeleteComment(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteCommentById(id);
+        }
+        public DeleteResponse DeleteSign(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteSignById(id);
+        }
+        public DeleteResponse DeleteFile(int id)
+        {
+            return this._cmsDatabase.ContractRepository.DeleteFileById(id);
         }
     }
 }

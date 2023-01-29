@@ -7,6 +7,7 @@
     using CMS.Server.Model.DBResponses;
     using System.Data;
     using Npgsql;
+    using System.Linq;
 
     public class ContractRepository : CMSDBConnection, IContractRepository
     {
@@ -770,6 +771,53 @@
             }
         }
 
+
+        public ReadResponse<List<Contractor>> ReadAllContractor()
+        {
+            var contractors = new List<Contractor>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from contractor";
+                    cmd.CommandType = CommandType.Text;
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int contractor_id = Convert.ToInt32(reader[0].ToString());
+                        int contract_id = Convert.ToInt32(reader[1].ToString());
+                        string company_name = reader[2].ToString();
+                        string person = reader[3].ToString();
+                        string department = reader[4].ToString();
+                        string email = reader[5].ToString();
+                        string tel_number = reader[6].ToString();
+                        string company_registration_number = reader[7].ToString();
+
+                        var contractorAddress = this.ReadAddress().Data.Find(x => x.ContractorId == contractor_id);
+
+                        contractors.Add(new Contractor(contractor_id, company_name, person, company_registration_number, department, contractorAddress, email, tel_number, contract_id));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Contractors are fetched successfully", contractors);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Contractors are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+
         public ReadResponse<List<LiabilityType>> ReadLiabilityType()
         {
             List<LiabilityType> liabilityTypes = new List<LiabilityType>();
@@ -990,7 +1038,7 @@
                         string person_name = reader[3].ToString();
 
 
-                        departments.Add(new Department(department_id, contact_id, department_type_id , person_name));
+                        departments.Add(new Department(department_id, contact_id, department_type_id, person_name));
                     }
                     cmd.Dispose();
 
@@ -2109,7 +2157,7 @@
         public ReadResponse<List<int>> ReadAllId()
         {
             var activeIds = new List<int>();
-                    
+
 
             using (IDbConnection connection = this.Connect)
             {
@@ -2161,7 +2209,7 @@
                 "                   join contracttype ct on ct.id = i.contracttypeid" +
                 "                   join contractor co on co.contractid = c.id" +
                 "                   join contractstatus cs on cs.id = i.contractstatusid";
-               
+
 
             using (IDbConnection connection = this.Connect)
             {
@@ -2207,27 +2255,41 @@
 
         public ReadResponse<List<Contract>> ReadLike(string text)
         {
+            var filterText = text.Split(" ")[0];
+
             var contracts = new List<Contract>();
 
-            string queryText = $"'%{text}%'";
+            string queryText = $"'%{filterText}%'";
 
-            string query = "Select " +
-                "                       c.id, " +
-                "                       ct.type, " +
-                "                       co.companyname, " +
-                "                       co.person, " +
-                "                       cs.status" +
-                "          from contract c" +
-                "                   join  info i on i.contractid = c.id" +
-                "                   join contracttype ct on ct.id = i.contracttypeid" +
-                "                   join contractor co on co.contractid = c.id" +
-                "                   join contractstatus cs on cs.id = i.contractstatusid" +
-                "          where " +
-               $"                   ct.type like {queryText} or" +
-               $"                   co.companyname like {queryText} or" +
-               $"                   co.person like {queryText} or" +
-               $"                   cs.status like {queryText} or" +
-               $"                   ct.type like {queryText}";
+            string query = string.Empty;
+
+            if (text.Split(" ").Length > 1)
+            {
+                var filters = text.Split(" ")[1].Split(",");
+
+                query = this.CreateReadLikeWithFiltersQuery(queryText, filters.ToList());
+
+            }
+            else
+            {
+                query = "Select " +
+                    "                       c.id, " +
+                    "                       ct.type, " +
+                    "                       co.companyname, " +
+                    "                       co.person, " +
+                    "                       cs.status" +
+                    "          from contract c" +
+                    "                   join  info i on i.contractid = c.id" +
+                    "                   join contracttype ct on ct.id = i.contracttypeid" +
+                    "                   join contractor co on co.contractid = c.id" +
+                    "                   join contractstatus cs on cs.id = i.contractstatusid" +
+                    "          where " +
+                   $"                   ct.type like {queryText} or" +
+                   $"                   co.companyname like {queryText} or" +
+                   $"                   co.person like {queryText} or" +
+                   $"                   cs.status like {queryText}";
+            }
+
 
             using (IDbConnection connection = this.Connect)
             {
@@ -2268,6 +2330,307 @@
             }
 
             throw new NotImplementedException();
+        }
+
+        private string CreateReadLikeWithFiltersQuery(string text, List<string> filters)
+        {
+            bool isIfBlockExecuted = false;
+
+            string query = "Select " +
+               "                       c.id, " +
+               "                       ct.type, " +
+               "                       co.companyname, " +
+               "                       co.person, " +
+               "                       cs.status" +
+               "          from contract c" +
+               "                   join  info i on i.contractid = c.id" +
+               "                   join contracttype ct on ct.id = i.contracttypeid" +
+               "                   join contractor co on co.contractid = c.id" +
+               "                   join contractstatus cs on cs.id = i.contractstatusid" +
+               "          where ";
+
+            if (filters.Contains("Vertragstyp"))
+            {
+                if (isIfBlockExecuted)
+                {
+                    query += " or ";
+                }
+
+                query += $"ct.type like {text}";
+                isIfBlockExecuted = true;
+            }
+            if (filters.Contains("Firmenname"))
+            {
+                if (isIfBlockExecuted)
+                {
+                    query += " or ";
+                }
+
+                query += $"co.companyname like {text}";
+                isIfBlockExecuted = true;
+            }
+            if (filters.Contains("Ansprechperson"))
+            {
+                if (isIfBlockExecuted)
+                {
+                    query += " or ";
+                }
+
+                query += $"co.person like {text}";
+                isIfBlockExecuted = true;
+            }
+
+            return query;
+        }
+
+        public DeleteResponse DeleteLiabilityById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM liability WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "liability cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "liability is deleted successfully!");
+        }
+        public DeleteResponse DeleteClaimById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM claim WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "claim cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "claim is deleted successfully!");
+        }
+        public DeleteResponse DeleteDepartmentById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM department WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "department cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "department is deleted successfully!");
+        }
+        public DeleteResponse DeleteFineById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM fine WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "fine cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "fine is deleted successfully!");
+        }
+        public DeleteResponse DeleteCategoryById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM category WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "category cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "category is deleted successfully!");
+        }
+        public DeleteResponse DeleteDutyById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM duty WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "duty cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "duty is deleted successfully!");
+        }
+        public DeleteResponse DeleteNotificationById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM notification WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "notification cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "notification is deleted successfully!");
+        }
+
+        public DeleteResponse DeleteCommentById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DeleteResponse DeleteSignById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM sign WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "sign cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "sign is deleted successfully!");
+        }
+        public DeleteResponse DeleteFileById(int id)
+        {
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM file WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "file cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "file is deleted successfully!");
         }
     }
 }

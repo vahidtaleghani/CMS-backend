@@ -56,5 +56,20 @@ namespace CMS.Server.Api
 
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse("Error")));
         }
+
+
+        [HttpGet("allContractor")]
+        public ActionResult<IEnumerable<Info>> Get()
+        {
+            var response = this._cmsServerOperationHandler.ReadAllContractor();
+
+            if (response.IsExecuted)
+            {
+                var serializedData = JsonConvert.SerializeObject(response.Data);
+                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+            }
+
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+        }
     }
 }
