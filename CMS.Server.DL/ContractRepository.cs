@@ -2575,7 +2575,30 @@
 
         public DeleteResponse DeleteCommentById(int id)
         {
-            throw new NotImplementedException();
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+                    cmd.Connection = connection;
+                    cmd.CommandText = "DELETE FROM comment WHERE \"id\"=@id;";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@id", id));
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    return new DeleteResponse(false, "comment cant be deleted!");
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+
+            return new DeleteResponse(true, "comment is deleted successfully!");
         }
 
         public DeleteResponse DeleteSignById(int id)

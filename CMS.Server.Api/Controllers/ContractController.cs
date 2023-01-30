@@ -8,6 +8,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
@@ -77,7 +78,7 @@
 
             if (value != null)
             {
-                contract = JsonConvert.DeserializeObject<Contract>(requestBody.ToString());
+                contract = new Contract(Convert.ToInt32(value), string.Empty);
             }
 
             var response = this._cmsServerOperationHandler.CreateContract(contract);
