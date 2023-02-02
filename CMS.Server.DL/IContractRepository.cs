@@ -35,6 +35,7 @@
         public ReadResponse<List<Contractor>> ReadContractor(int id);
 
         public ReadResponse<List<Contractor>> ReadAllContractor();
+        public ReadResponse<List<ContractorInfo>> ReadAllContractorInfo();
         public ReadResponse<List<LiabilityType>> ReadLiabilityType();
         public ReadResponse<List<Liability>> ReadLiability(int id);
         public ReadResponse<List<ClaimType>> ReadClaimType();

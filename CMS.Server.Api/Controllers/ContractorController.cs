@@ -59,7 +59,7 @@ namespace CMS.Server.Api
 
 
         [HttpGet("allContractor")]
-        public ActionResult<IEnumerable<Info>> Get()
+        public ActionResult<IEnumerable<Contractor>> Get()
         {
             var response = this._cmsServerOperationHandler.ReadAllContractor();
 
@@ -71,5 +71,21 @@ namespace CMS.Server.Api
 
             return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
         }
+
+
+        [HttpGet("allContractors")]
+        public ActionResult<IEnumerable<ContractorInfo>> GetAll()
+        {
+            var response = this._cmsServerOperationHandler.ReadAllContractorInfo();
+
+            if (response.IsExecuted)
+            {
+                var serializedData = JsonConvert.SerializeObject(response.Data);
+                return StatusCode(StatusCodes.Status200OK, JsonConvert.SerializeObject(response.Data));
+            }
+
+            return StatusCode(StatusCodes.Status400BadRequest, JsonConvert.SerializeObject(new ServerResponse(response.Message)));
+        }
+
     }
 }

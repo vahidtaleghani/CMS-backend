@@ -818,6 +818,91 @@
             }
         }
 
+        private int ReadInfoId(int contract_id)
+        {
+            int id = 0;
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from info where contractid = @ContractID";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.Parameters.Add(new NpgsqlParameter("@ContractID", contract_id));
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        id = Convert.ToInt32(reader[0].ToString());
+
+                    }
+                    cmd.Dispose();
+
+                    return id;
+                }
+                catch (Exception ex)
+                {
+                    return 0;
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+        public ReadResponse<List<ContractorInfo>> ReadAllContractorInfo()
+        {
+            var contractors = new List<ContractorInfo>();
+
+            using (IDbConnection connection = this.Connect)
+            {
+                try
+                {
+                    connection.Open();
+                    IDbCommand cmd = connection.CreateCommand();
+
+                    cmd.Connection = connection;
+                    cmd.CommandText = "Select * from contractor";
+                    cmd.CommandType = CommandType.Text;
+                    NpgsqlDataReader reader = (NpgsqlDataReader)cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        int contractor_id = Convert.ToInt32(reader[0].ToString());
+                        int contract_id = Convert.ToInt32(reader[1].ToString());
+                        string company_name = reader[2].ToString();
+                        string person = reader[3].ToString();
+                        string department = reader[4].ToString();
+                        string email = reader[5].ToString();
+                        string tel_number = reader[6].ToString();
+                        string company_registration_number = reader[7].ToString();
+
+                        var contractorAddress = this.ReadAddress().Data.Find(x => x.ContractorId == contractor_id);
+                        int info_id = ReadInfoId(contract_id);
+                        int contract_type_id = this.ReadInfo().Data.Find(x => x.ContractId == contract_id).ContractTypeId;
+                        int contract_status_id = this.ReadInfo().Data.Find(x => x.ContractId == contract_id).ContractStatusId;
+
+                        contractors.Add(new ContractorInfo(contractor_id, company_name, person, company_registration_number, department, contractorAddress, email, tel_number, contract_id, info_id, contract_type_id, contract_status_id));
+                    }
+                    cmd.Dispose();
+
+                    return new(true, "Contractors are fetched successfully", contractors);
+                }
+                catch (Exception ex)
+                {
+                    return new(false, "Contractors are fetched Unsuccessfully", null);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            }
+        }
+
+
         public ReadResponse<List<LiabilityType>> ReadLiabilityType()
         {
             List<LiabilityType> liabilityTypes = new List<LiabilityType>();

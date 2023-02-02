@@ -119,7 +119,7 @@
         }
 
         public CreateResponse CreateLiability(Liability liability)
-         {
+        {
             if (this._cmsDatabase.ContractRepository.ReadAllId().Data.Contains(liability.ContractId))
             {
                 if (liability.Id != 0)
@@ -195,6 +195,11 @@
         public ReadResponse<List<Contractor>> ReadAllContractor()
         {
             return this._cmsDatabase.ContractRepository.ReadAllContractor();
+        }
+
+        public ReadResponse<List<ContractorInfo>> ReadAllContractorInfo()
+        {
+            return this._cmsDatabase.ContractRepository.ReadAllContractorInfo();
         }
 
         public UpdateResponse UpdateContractor(Contractor contractor)
@@ -490,7 +495,7 @@
             return this._cmsDatabase.ContractRepository.ReadAllId();
         }
 
-        public ReadResponse<List<Contract>> ReadAllContract() 
+        public ReadResponse<List<Contract>> ReadAllContract()
         {
             return this._cmsDatabase.ContractRepository.ReadAllContract();
         }
